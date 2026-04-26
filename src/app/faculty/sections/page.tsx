@@ -217,7 +217,7 @@ export default function FacultySectionsPage() {
                             <FileText className="w-7 h-7" />
                           </div>
                           <div>
-                            <h4 className="text-base font-bold text-text-primary leading-tight">{cert.name}</h4>
+                            <h4 className="text-base font-bold text-text-primary leading-tight">{cert.title}</h4>
                             <p className="text-[11px] text-text-muted mt-2 uppercase tracking-widest font-semibold">{cert.issuer}</p>
                           </div>
                         </div>
