@@ -546,8 +546,8 @@
       "source_file": "/run/media/abhishek/BBC/Projects/Do-Fetch/src/app/faculty/profile/page.tsx",
       "source_location": "L9",
       "weight": 1.0,
-      "_src": "page_facultyprofilepage",
-      "_tgt": "authcontext_useauth",
+      "_src": "authcontext_useauth",
+      "_tgt": "page_facultyprofilepage",
       "source": "authcontext_useauth",
       "target": "page_facultyprofilepage"
     },
@@ -558,8 +558,8 @@
       "source_file": "/run/media/abhishek/BBC/Projects/Do-Fetch/src/app/student/profile/page.tsx",
       "source_location": "L9",
       "weight": 1.0,
-      "_src": "page_studentprofilepage",
-      "_tgt": "authcontext_useauth",
+      "_src": "authcontext_useauth",
+      "_tgt": "page_studentprofilepage",
       "source": "authcontext_useauth",
       "target": "page_studentprofilepage"
     },

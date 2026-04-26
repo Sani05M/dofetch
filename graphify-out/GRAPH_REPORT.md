@@ -1,7 +1,7 @@
 # Graph Report - /run/media/abhishek/BBC/Projects/Do-Fetch  (2026-04-27)
 
 ## Corpus Check
-- 32 files · ~108,013 words
+- 32 files · ~108,221 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -51,10 +51,10 @@
   /run/media/abhishek/BBC/Projects/Do-Fetch/src/context/AuthContext.tsx → /run/media/abhishek/BBC/Projects/Do-Fetch/src/app/login/faculty/page.tsx
 - `useAuth()` --calls--> `StudentLoginPage()`  [INFERRED]
   /run/media/abhishek/BBC/Projects/Do-Fetch/src/context/AuthContext.tsx → /run/media/abhishek/BBC/Projects/Do-Fetch/src/app/login/student/page.tsx
-- `FacultyProfilePage()` --calls--> `useAuth()`  [INFERRED]
-  /run/media/abhishek/BBC/Projects/Do-Fetch/src/app/faculty/profile/page.tsx → /run/media/abhishek/BBC/Projects/Do-Fetch/src/context/AuthContext.tsx
-- `StudentProfilePage()` --calls--> `useAuth()`  [INFERRED]
-  /run/media/abhishek/BBC/Projects/Do-Fetch/src/app/student/profile/page.tsx → /run/media/abhishek/BBC/Projects/Do-Fetch/src/context/AuthContext.tsx
+- `useAuth()` --calls--> `FacultyProfilePage()`  [INFERRED]
+  /run/media/abhishek/BBC/Projects/Do-Fetch/src/context/AuthContext.tsx → /run/media/abhishek/BBC/Projects/Do-Fetch/src/app/faculty/profile/page.tsx
+- `useAuth()` --calls--> `StudentProfilePage()`  [INFERRED]
+  /run/media/abhishek/BBC/Projects/Do-Fetch/src/context/AuthContext.tsx → /run/media/abhishek/BBC/Projects/Do-Fetch/src/app/student/profile/page.tsx
 
 ## Communities
 
