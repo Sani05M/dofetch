@@ -5,12 +5,34 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Zap, ArrowRight, Lock, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { CustomSelect } from "@/components/CustomSelect";
+
+const BATCH_OPTIONS = [
+  { label: "2021 - 2025", value: "2021-2025" },
+  { label: "2022 - 2026", value: "2022-2026" },
+  { label: "2023 - 2027", value: "2023-2027" },
+  { label: "2024 - 2028", value: "2024-2028" },
+];
+
+const DEPT_OPTIONS = [
+  { label: "Computer Science (CSE)", value: "CSE" },
+  { label: "Electronics (ECE)", value: "ECE" },
+  { label: "Mechanical Eng.", value: "MECH" },
+  { label: "Civil Eng.", value: "CIVIL" },
+  { label: "Business Admin (BBA)", value: "BBA" },
+  { label: "School of Law", value: "LAW" },
+];
 
 export default function StudentLoginPage() {
   const router = useRouter();
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [batch, setBatch] = useState("");
+  const [dept, setDept] = useState("");
+  const [rollNo, setRollNo] = useState("");
+  const [section, setSection] = useState("");
+  const [regNo, setRegNo] = useState("");
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,9 +41,9 @@ export default function StudentLoginPage() {
       name: "Abhishek Singh",
       email: email || "name@adamas.edu",
       role: "student",
-      rollNo: "CS24001",
-      regNo: "AD2024CS001",
-      section: "CS-A",
+      rollNo: rollNo || "CS24001",
+      regNo: regNo || "AD2024CS001",
+      section: section || "CS-A",
     });
     router.push("/student/dashboard");
   };
@@ -61,9 +83,32 @@ export default function StudentLoginPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-2">Batch</label>
+                <CustomSelect 
+                  options={BATCH_OPTIONS}
+                  value={batch}
+                  onChange={setBatch}
+                  placeholder="Select Batch"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-2">Department</label>
+                <CustomSelect 
+                  options={DEPT_OPTIONS}
+                  value={dept}
+                  onChange={setDept}
+                  placeholder="Select Dept"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
                 <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-2">Roll Number</label>
                 <input 
                   type="text" 
+                  value={rollNo}
+                  onChange={(e) => setRollNo(e.target.value)}
                   className="input-field"
                   placeholder="e.g. 22CS001"
                   required
@@ -73,6 +118,8 @@ export default function StudentLoginPage() {
                 <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-2">Section</label>
                 <input 
                   type="text" 
+                  value={section}
+                  onChange={(e) => setSection(e.target.value)}
                   className="input-field"
                   placeholder="e.g. A"
                   required
@@ -84,6 +131,8 @@ export default function StudentLoginPage() {
               <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-2">Registration Number</label>
               <input 
                 type="text" 
+                value={regNo}
+                onChange={(e) => setRegNo(e.target.value)}
                 className="input-field"
                 placeholder="e.g. AU/2022/01234"
                 required

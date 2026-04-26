@@ -5,12 +5,42 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ShieldCheck, ArrowRight, ShieldAlert, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { CustomSelect } from "@/components/CustomSelect";
+
+const BATCH_OPTIONS = [
+  { label: "2021 - 2025", value: "2021-2025" },
+  { label: "2022 - 2026", value: "2022-2026" },
+  { label: "2023 - 2027", value: "2023-2027" },
+  { label: "2024 - 2028", value: "2024-2028" },
+];
+
+const DEPT_OPTIONS = [
+  { label: "Computer Science (CSE)", value: "CSE" },
+  { label: "Electronics (ECE)", value: "ECE" },
+  { label: "Mechanical Eng.", value: "MECH" },
+  { label: "Civil Eng.", value: "CIVIL" },
+  { label: "Business Admin (BBA)", value: "BBA" },
+  { label: "School of Law", value: "LAW" },
+];
+
+const SECTION_OPTIONS = [
+  { label: "Section A", value: "A" },
+  { label: "Section B", value: "B" },
+  { label: "Section C", value: "C" },
+  { label: "Section D", value: "D" },
+  { label: "Section E", value: "E" },
+  { label: "Section F", value: "F" },
+];
 
 export default function FacultyLoginPage() {
   const router = useRouter();
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [batch, setBatch] = useState("");
+  const [dept, setDept] = useState("");
+  const [facultyId, setFacultyId] = useState("");
+  const [sections, setSections] = useState<string[]>([]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,8 +49,8 @@ export default function FacultyLoginPage() {
       name: "Dr. Faculty",
       email: email || "admin@adamas.edu",
       role: "faculty",
-      facultyId: "FAC-CS-001",
-      sectionsManaged: ["CS-A", "CS-B"],
+      facultyId: facultyId || "FAC-CS-001",
+      sectionsManaged: sections.length > 0 ? sections.map(s => `CS-${s}`) : ["CS-A", "CS-B"],
     });
     router.push("/faculty/dashboard");
   };
@@ -58,11 +88,36 @@ export default function FacultyLoginPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-2">Faculty ID Card No.</label>
+                <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-2">Batch</label>
+                <CustomSelect 
+                  options={BATCH_OPTIONS}
+                  value={batch}
+                  onChange={setBatch}
+                  placeholder="Select Batch"
+                  className="[&>button]:focus:border-red-500 [&>button]:hover:border-zinc-300"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-2">Department</label>
+                <CustomSelect 
+                  options={DEPT_OPTIONS}
+                  value={dept}
+                  onChange={setDept}
+                  placeholder="Select Dept"
+                  className="[&>button]:focus:border-red-500 [&>button]:hover:border-zinc-300"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-2">Faculty ID No.</label>
                 <input 
                   type="text" 
+                  value={facultyId}
+                  onChange={(e) => setFacultyId(e.target.value)}
                   className="input-field border-zinc-200 focus:border-red-500"
                   placeholder="e.g. FAC-2024"
                   required
@@ -70,12 +125,14 @@ export default function FacultyLoginPage() {
               </div>
               
               <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-2">Sections (Comma sep)</label>
-                <input 
-                  type="text" 
-                  className="input-field border-zinc-200 focus:border-red-500"
-                  placeholder="e.g. CSE-A, CSE-B"
-                  required
+                <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-2">Sections Managed</label>
+                <CustomSelect 
+                  options={SECTION_OPTIONS}
+                  value={sections}
+                  onChange={setSections}
+                  multiple={true}
+                  placeholder="Select Sections"
+                  className="[&>button]:focus:border-red-500 [&>button]:hover:border-zinc-300"
                 />
               </div>
             </div>
