@@ -56,7 +56,8 @@ export function useCertificates() {
         // Migration: Ensure title exists (handle legacy 'name' field if it exists)
         const migrated = parsed.map((c: any) => ({
           ...c,
-          title: c.title || c.name || "Untitled Artifact"
+          title: c.title || c.name || "Untitled Artifact",
+          studentName: c.studentName || (c.studentId ? "Abhishek Singh" : "Authorized Scholar")
         }));
         setCertificates(migrated);
       } catch (e) {
