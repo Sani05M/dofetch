@@ -24,10 +24,10 @@ export async function resolveModel(): Promise<{ genAI: GoogleGenerativeAI; model
  * Executes a Gemini request with automatic retry logic for 429 (Rate Limit) errors.
  * Uses exponential backoff with jitter to maximize success on free-tier keys.
  */
-export async function safeGenerateContent(model: any, prompt: any, retries = 3, delay = 1000): Promise<any> {
+export async function safeGenerateContent(model: any, request: any, retries = 3, delay = 1000): Promise<any> {
   for (let i = 0; i < retries; i++) {
     try {
-      return await model.generateContent(prompt);
+      return await model.generateContent(request);
     } catch (error: any) {
       const isRateLimit = error.message?.includes("429") || error.message?.includes("quota") || error.message?.includes("Too Many Requests");
       
@@ -53,18 +53,27 @@ export async function extractCertificateData(file: File) {
     const prompt = `
       You are an expert academic credential verifier. Analyze this certificate/document image and extract the following in pure JSON format:
       {
-        "issuer": "string (the name of the issuing authority/company)",
-        "issue_date": "YYYY-MM-DD (extract the issue date)",
+        "title": "string (the name/title of the course, achievement, or certificate)",
+        "issuer": "string (the name of the issuing authority/company/institution)",
+        "issue_date": "YYYY-MM-DD (extract the issue date, if none found use null)",
+        "type": "string (Classify it strictly as one of: 'Academic Artifact', 'Professional Cert', 'Extracurricular', or 'Other')",
         "score": number (Evaluate the authenticity, effort, and value of this certificate and give it a weightage score OUT OF 50. Use strict criteria.),
         "authenticity_reasoning": "string (Explain why you gave this score out of 50. Check for signs of forgery, the reputation of the issuer, and the effort required to obtain it.)"
       }
       Only return valid JSON without Markdown blocks.
     `;
 
-    const result = await safeGenerateContent(model, [
-      prompt,
-      { inlineData: { data: base64Data, mimeType: file.type } },
-    ]);
+    const result = await safeGenerateContent(model, {
+      contents: [{ role: "user", parts: [
+        { text: prompt },
+        { inlineData: { data: base64Data, mimeType: file.type } }
+      ]}],
+      generationConfig: {
+        temperature: 0,
+        topK: 1,
+        topP: 1
+      }
+    });
 
     const text = (await result.response).text().replace(/```json|```/g, "").trim();
     return JSON.parse(text);

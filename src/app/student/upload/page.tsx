@@ -37,6 +37,12 @@ export default function StudentUpload() {
       payload.append("title", formData.title);
       payload.append("type", formData.type);
       payload.append("issuer", formData.issuer);
+      payload.append("issue_date", formData.issueDate);
+      payload.append("score", extractedAiData.score.toString());
+      payload.append("authenticity_reasoning", extractedAiData.reasoning);
+      if (extractedAiData.fileHash) {
+        payload.append("file_hash", extractedAiData.fileHash);
+      }
 
       const res = await fetch("/api/upload", {
         method: "POST",
@@ -65,17 +71,56 @@ export default function StudentUpload() {
     setIsDragging(false);
   };
 
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractedAiData, setExtractedAiData] = useState({ score: 0, reasoning: "", fileHash: "" });
+
+  const handleExtraction = async (file: File) => {
+    setSelectedFile(file);
+    setIsExtracting(true);
+    try {
+      const payload = new FormData();
+      payload.append("file", file);
+      const res = await fetch("/api/extract", { method: "POST", body: payload });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        alert(error.error || "Failed to analyze artifact");
+        setSelectedFile(null);
+        setIsExtracting(false);
+        return;
+      }
+
+      const { data } = await res.json();
+      setFormData({
+        title: data.title || "",
+        issuer: data.issuer || "",
+        type: data.type === 'Professional Cert' || data.type === 'Academic Artifact' ? data.type : 'Academic Artifact',
+        issueDate: data.issue_date || new Date().toISOString().split("T")[0],
+      });
+      setExtractedAiData({
+        score: data.score || 0,
+        reasoning: data.authenticity_reasoning || "No reasoning provided",
+        fileHash: data.file_hash || "",
+      });
+    } catch (error) {
+      console.error("Extraction failed", error);
+      setSelectedFile(null);
+    } finally {
+      setIsExtracting(false);
+    }
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setSelectedFile(e.dataTransfer.files[0]);
+      handleExtraction(e.dataTransfer.files[0]);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+      handleExtraction(e.target.files[0]);
     }
   };
 
@@ -158,11 +203,28 @@ export default function StudentUpload() {
                 type="file" 
                 ref={fileInputRef}
                 className="hidden"
-                accept=".pdf,.png,.jpg,.jpeg"
+                accept="image/*,.pdf"
                 onChange={handleFileChange}
               />
               
-              {selectedFile ? (
+              {isExtracting ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center text-accent"
+                >
+                  <div className="w-16 h-16 bg-accent/20 rounded-2xl flex items-center justify-center mb-4 relative overflow-hidden">
+                    <motion.div 
+                      className="absolute inset-0 bg-accent/40"
+                      animate={{ y: ["-100%", "100%"] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                    />
+                    <Zap className="w-8 h-8 relative z-10" />
+                  </div>
+                  <p className="font-black text-sm uppercase tracking-widest text-bg-dark">Scanning Artifact...</p>
+                  <p className="text-[10px] text-text-secondary font-bold mt-1 uppercase tracking-widest">Extracting Metadata via AI</p>
+                </motion.div>
+              ) : selectedFile ? (
                 <>
                   <div className="w-20 h-20 bg-green-500 rounded-2xl flex items-center justify-center shadow-[4px_4px_0_#166534]">
                     <FileText className="w-10 h-10 text-white" />

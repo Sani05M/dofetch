@@ -20,6 +20,13 @@ export async function POST(req: Request) {
     const file = formData.get("file") as File;
     const title = formData.get("title") as string;
     const type = formData.get("type") as string;
+    
+    // Accept pre-extracted fields from the frontend
+    const issuer = formData.get("issuer") as string || "Unknown";
+    const issue_date = formData.get("issue_date") as string || new Date().toISOString().split('T')[0];
+    const score = parseInt(formData.get("score") as string) || 0;
+    const authenticity_reasoning = formData.get("authenticity_reasoning") as string || "No reasoning provided.";
+    const file_hash = formData.get("file_hash") as string || null;
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -28,13 +35,7 @@ export async function POST(req: Request) {
     // 1. Upload to Telegram (Infinite Storage)
     const { fileId, messageId } = await uploadToTelegram(file, file.name);
 
-    // 2. AI Extraction (Gemini 1.5 Vision)
-    const extractedData = await extractCertificateData(file);
-
-    // 3. (Profile is now handled by mandatory onboarding, so we skip the upsert here)
-    // We just proceed to save the certificate linked to the authenticated userId.
-
-    // 4. Save Metadata to Supabase
+    // 2. Save Metadata to Supabase using pre-extracted data
     const { data, error } = await supabase
       .from("certificates")
       .insert({
@@ -43,13 +44,14 @@ export async function POST(req: Request) {
         telegram_message_id: messageId,
         title: title || file.name,
         type: type,
-        issuer: extractedData.issuer,
-        issue_date: extractedData.issue_date,
-        score: extractedData.score,
+        issuer: issuer,
+        issue_date: issue_date,
+        score: score,
         status: "pending",
         extracted_text: { 
           raw_filename: file.name, 
-          authenticity_reasoning: extractedData.authenticity_reasoning 
+          authenticity_reasoning: authenticity_reasoning,
+          file_hash: file_hash
         }
       })
       .select()
