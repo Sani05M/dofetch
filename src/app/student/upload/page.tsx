@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { CustomSelect } from "@/components/CustomSelect";
+import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { useCertificates } from "@/hooks/useCertificates";
 import { motion } from "framer-motion";
 import { Upload, Zap, CheckCircle2, Loader2, FileText, ArrowRight } from "lucide-react";
@@ -119,24 +121,21 @@ export default function StudentUpload() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Artifact Type</label>
-                <select 
-                  className="input-field appearance-none"
+                <CustomSelect 
+                  options={[
+                    { label: 'Academic Artifact', value: 'Academic Artifact' },
+                    { label: 'Professional Cert', value: 'Professional Cert' },
+                    { label: 'Workshop Token', value: 'Workshop Token' },
+                  ]}
                   value={formData.type}
-                  onChange={(e) => setFormData({...formData, type: e.target.value})}
-                >
-                  <option>Academic Artifact</option>
-                  <option>Professional Cert</option>
-                  <option>Workshop Token</option>
-                </select>
+                  onChange={(val) => setFormData({...formData, type: val})}
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Issue Date</label>
-                <input 
-                  type="date" 
-                  required
-                  className="input-field"
+                <CustomDatePicker 
                   value={formData.issueDate}
-                  onChange={(e) => setFormData({...formData, issueDate: e.target.value})}
+                  onChange={(date) => setFormData({...formData, issueDate: date})}
                 />
               </div>
             </div>

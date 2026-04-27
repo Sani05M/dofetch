@@ -126,32 +126,24 @@ export function DashboardLayout({ children, allowedRole }: DashboardLayoutProps)
         {user.role === "student" ? (
           <>
             <NavTab href="/student/dashboard" label="Home" icon={<LayoutGrid className="w-5 h-5"/>} isActive={pathname === "/student/dashboard"} />
-            <NavTab href="/student/certificates" label="Vault" icon={<ShieldCheck className="w-5 h-5"/>} isActive={pathname === "/student/certificates"} />
-            <Link href="/student/upload" className="flex flex-col items-center gap-1 text-[8px] font-black uppercase tracking-widest text-text-secondary">
-              <motion.div 
-                whileTap={{ x: 3, y: 3 }}
-                className="w-10 h-10 -mt-8 bg-accent border-3 border-bg-dark rounded-xl flex items-center justify-center text-bg-dark shadow-[4px_4px_0_#000] active:shadow-none transition-all"
-              >
-                <Plus className="w-5 h-5 stroke-[3px]"/>
-              </motion.div>
+            
+            <Link href="/student/upload" className={`flex flex-col items-center gap-1 text-[8px] font-black uppercase tracking-widest transition-colors px-3 py-1 rounded-xl ${pathname === "/student/upload" ? "text-accent" : "text-text-secondary hover:text-text-primary"}`}>
+              <Plus className={`w-5 h-5 ${pathname !== "/student/upload" && "text-accent"}`} />
               <span>Sync</span>
             </Link>
-            <NavTab href="/student/profile" label="Profile" icon={<UserCircle className="w-5 h-5"/>} isActive={pathname === "/student/profile"} />
+
+            <NavTab href="/student/certificates" label="Vault" icon={<ShieldCheck className="w-5 h-5"/>} isActive={pathname === "/student/certificates"} />
           </>
         ) : (
           <>
             <NavTab href="/faculty/dashboard" label="Home" icon={<LayoutGrid className="w-5 h-5"/>} isActive={pathname === "/faculty/dashboard"} />
-            <NavTab href="/faculty/sections" label="Clusters" icon={<Layers className="w-5 h-5"/>} isActive={pathname === "/faculty/sections"} />
-            <Link href="/faculty/certificates" className="flex flex-col items-center gap-1 text-[8px] font-black uppercase tracking-widest text-text-secondary">
-              <motion.div 
-                whileTap={{ x: 3, y: 3 }}
-                className="w-10 h-10 -mt-8 bg-accent border-3 border-bg-dark rounded-xl flex items-center justify-center text-bg-dark shadow-[4px_4px_0_#000] active:shadow-none transition-all"
-              >
-                <ShieldCheck className="w-5 h-5 stroke-[3px]"/>
-              </motion.div>
+            
+            <Link href="/faculty/certificates" className={`flex flex-col items-center gap-1 text-[8px] font-black uppercase tracking-widest transition-colors px-3 py-1 rounded-xl ${pathname === "/faculty/certificates" ? "text-accent" : "text-text-secondary hover:text-text-primary"}`}>
+              <ShieldCheck className={`w-5 h-5 ${pathname !== "/faculty/certificates" && "text-accent"}`} />
               <span>Audit</span>
             </Link>
-            <NavTab href="/faculty/profile" label="Profile" icon={<UserCircle className="w-5 h-5"/>} isActive={pathname === "/faculty/profile"} />
+
+            <NavTab href="/faculty/sections" label="Clusters" icon={<Layers className="w-5 h-5"/>} isActive={pathname === "/faculty/sections"} />
           </>
         )}
       </nav>
