@@ -11,7 +11,7 @@ import { AnimatedSection, containerVariants, itemVariants } from "@/components/A
 import { Grid, List as ListIcon, Search, Filter, ShieldCheck, Zap, Download, MoreVertical } from "lucide-react";
 
 function StudentVaultContent() {
-  const { certificates } = useCertificates();
+  const { certificates, refresh } = useCertificates();
   const searchParams = useSearchParams();
   const filterParam = searchParams.get("filter");
   const [view, setView] = useState<"grid" | "list">("grid");
@@ -158,6 +158,7 @@ function StudentVaultContent() {
         certificate={selectedCert}
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
+        onDelete={refresh}
       />
     </>
   );

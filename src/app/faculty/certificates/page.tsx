@@ -13,30 +13,25 @@ import {
   Zap
 } from "lucide-react";
 
-interface GlobalCert {
-  id: string;
-  studentName: string;
-  rollNo: string;
-  section: string;
-  certName: string;
-  issuer: string;
-  status: "verified" | "pending" | "rejected";
-  date: string;
-}
-
-const MOCK_GLOBAL_CERTS: GlobalCert[] = [
-  { id: "C1", studentName: "Abhishek Singh", rollNo: "22CS001", section: "A", certName: "Google Cloud Prof.", issuer: "Google", status: "verified", date: "2024-09-15" },
-  { id: "C2", studentName: "Priya Sharma", rollNo: "22CS042", section: "B", certName: "AWS Developer", issuer: "AWS", status: "verified", date: "2024-09-10" },
-  { id: "C3", studentName: "Rahul Verma", rollNo: "22CS055", section: "A", certName: "React Advanced", issuer: "Coursera", status: "pending", date: "2024-09-12" },
-  { id: "C4", studentName: "Ananya Das", rollNo: "22CS024", section: "C", certName: "UI/UX Design", issuer: "Udemy", status: "verified", date: "2024-09-08" },
-  { id: "C5", studentName: "Vikram Raj", rollNo: "22CS031", section: "B", certName: "Python for DS", issuer: "IBM", status: "rejected", date: "2024-09-05" },
-];
+import { useCertificates } from "@/hooks/useCertificates";
 
 export default function FacultyCertificatesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const { certificates } = useCertificates();
 
-  const filtered = MOCK_GLOBAL_CERTS.filter(c => 
+  const formattedCerts = certificates.map(c => ({
+    id: c.id,
+    studentName: c.studentName || "Unknown Scholar",
+    rollNo: c.studentId.substring(0, 8),
+    section: "Global",
+    certName: c.title,
+    issuer: c.issuer,
+    status: c.status,
+    date: c.issueDate
+  }));
+
+  const filtered = formattedCerts.filter(c => 
     (c.studentName.toLowerCase().includes(search.toLowerCase()) || c.certName.toLowerCase().includes(search.toLowerCase())) &&
     (statusFilter === "All" || c.status === statusFilter.toLowerCase())
   );

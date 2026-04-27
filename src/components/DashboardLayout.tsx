@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Zap, LogOut, LayoutGrid, Plus, ShieldCheck, UserCircle, Layers } from "lucide-react";
 import { motion } from "framer-motion";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { UserButton, useUser } from "@clerk/nextjs";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -15,15 +16,20 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children, allowedRole }: DashboardLayoutProps) {
   const { user, logout, isLoading } = useAuth();
+  const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
   const router = useRouter();
 
   useEffect(() => {
     if (!isLoading && !user) {
       router.push("/");
-    } else if (!isLoading && user && user.role !== allowedRole) {
-      router.push(user.role === "student" ? "/student/dashboard" : "/faculty/dashboard");
+    } else if (!isLoading && user && clerkLoaded && clerkUser) {
+      if (!clerkUser.publicMetadata.onboardingComplete) {
+        router.push("/onboarding");
+      } else if (user.role !== allowedRole) {
+        router.push(user.role === "student" ? "/student/dashboard" : "/faculty/dashboard");
+      }
     }
-  }, [user, isLoading, allowedRole, router]);
+  }, [user, isLoading, clerkUser, clerkLoaded, allowedRole, router]);
 
   if (isLoading || !user || user.role !== allowedRole) {
     return (
@@ -74,14 +80,15 @@ export function DashboardLayout({ children, allowedRole }: DashboardLayoutProps)
             </div>
             
             <div className="flex items-center gap-1.5 md:gap-3">
-              <motion.div whileTap={{ scale: 0.9 }}>
-                <Link 
-                  href={user.role === "faculty" ? "/faculty/profile" : "/student/profile"}
-                  className="w-9 h-9 md:w-11 md:h-11 rounded-xl bg-bg-surface border-2 border-border flex items-center justify-center text-text-secondary hover:text-text-primary hover:border-text-primary hover:shadow-[3px_3px_0_var(--color-text-primary)] transition-all"
-                >
-                  <UserCircle className="w-5 h-5 md:w-6 md:h-6 stroke-[2.5px]" />
-                </Link>
-              </motion.div>
+              <div className="p-1 rounded-xl bg-bg-surface border-2 border-border flex items-center justify-center text-text-secondary hover:border-text-primary hover:shadow-[3px_3px_0_var(--color-text-primary)] transition-all">
+                <UserButton 
+                  appearance={{
+                    elements: {
+                      userButtonAvatarBox: "w-7 h-7 md:w-8 md:h-8 rounded-lg",
+                    }
+                  }}
+                />
+              </div>
               <motion.button 
                 whileTap={{ x: 2, y: 2 }}
                 onClick={handleLogout} 

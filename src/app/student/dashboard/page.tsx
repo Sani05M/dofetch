@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 
 export default function StudentDashboard() {
-  const { certificates } = useCertificates();
+  const { certificates, refresh } = useCertificates();
   const { user } = useAuth();
 
   const verifiedCount = certificates.filter(c => c.status === "verified" || c.status === "approved").length;
@@ -134,6 +134,7 @@ export default function StudentDashboard() {
         certificate={selectedCert}
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
+        onDelete={refresh}
       />
     </DashboardLayout>
   );

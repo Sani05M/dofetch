@@ -9,11 +9,18 @@ export interface Certificate {
   issuer: string;
   studentName: string;
   studentId: string;
+  fileId?: string; // Link to Telegram file_id
+  section?: string;
+  batch?: string;
   type: string;
   issueDate: string;
   rating: string;
   status: "verified" | "pending" | "rejected" | "approved";
   fileType: "PDF" | "IMG";
+  extractedText?: {
+    ai_reasoning?: string;
+    [key: string]: any;
+  };
 }
 
 interface CertificateCardProps {
@@ -27,71 +34,65 @@ export function CertificateCard({ certificate, className, onClick }: Certificate
 
   return (
     <motion.div 
-      whileHover={{ x: -1, y: -1 }}
-      whileTap={{ x: 3, y: 3 }}
+      whileHover={{ x: -2, y: -2 }}
+      whileTap={{ x: 2, y: 2 }}
       onClick={onClick}
       className={cn(
-        "bento-3d group hover:bg-accent flex flex-col justify-between h-full p-6 md:p-8 transition-all active:shadow-none",
+        "group h-full flex flex-col justify-between p-6 rounded-[2.5rem] border-4 border-black shadow-[12px_12px_0_#000] transition-all cursor-pointer bg-white",
         className
       )}
     >
       <div>
-        <div className="flex justify-between items-start mb-6 md:mb-8">
-          <div className="w-12 h-12 md:w-16 md:h-16 bg-bg-dark rounded-xl md:rounded-2xl flex items-center justify-center text-accent group-hover:bg-bg-surface group-hover:text-bg-dark transition-colors border-2 border-bg-dark">
-            <Zap className="w-6 h-6 md:w-8 md:h-8 fill-current" />
+        <div className="flex justify-between items-start mb-6">
+          <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center text-accent shadow-xl">
+            <Zap className="w-8 h-8 fill-current" />
           </div>
           <div className={cn(
-            "px-2 md:px-3 py-1 rounded-lg text-[8px] md:text-[10px] font-black uppercase tracking-widest border-2",
+            "px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border-2",
             isVerified 
-              ? "bg-green-500/10 text-green-600 border-green-600/20 group-hover:bg-bg-dark group-hover:text-green-400 group-hover:border-bg-dark" 
-              : "bg-yellow-500/10 text-yellow-600 border-yellow-500/20 group-hover:bg-bg-dark group-hover:text-yellow-400 group-hover:border-bg-dark"
+              ? "bg-green-50 text-green-600 border-green-600/20" 
+              : "bg-black text-white border-black"
           )}>
             {isVerified ? "VERIFIED" : "PENDING"}
           </div>
         </div>
 
-        <h3 className="text-xl md:text-3xl font-black uppercase tracking-tight leading-tight mb-3 md:mb-4 group-hover:text-bg-dark transition-colors">
+        <h3 className="text-3xl font-black uppercase tracking-tighter leading-[0.85] mb-4 text-black">
           {certificate.title}
         </h3>
         
-        <div className="space-y-1 md:space-y-2 mb-6 md:mb-8">
-          <p className="text-[10px] md:text-sm font-bold uppercase tracking-widest text-text-secondary group-hover:text-bg-dark/70">Issued by {certificate.issuer}</p>
-          <p className="text-[8px] md:text-xs font-black uppercase tracking-widest text-text-primary group-hover:text-bg-dark transition-colors">{certificate.issueDate}</p>
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">ISSUED BY {certificate.issuer || 'UNKNOWN (MANUAL VERIFICATION REQUIRED)'}</p>
+          <p className="text-[10px] font-black uppercase text-zinc-500">{certificate.issueDate}</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 md:gap-4 pt-6 border-t-2 border-border group-hover:border-bg-dark/20 transition-colors">
+      <div className="flex items-center gap-3 pt-6 border-t-4 border-black/10 mt-8">
         <button 
           onClick={(e) => {
             e.stopPropagation();
-            const content = `Certificate: ${certificate.title}\nIssuer: ${certificate.issuer}\nDate: ${certificate.issueDate}\nStatus: ${certificate.status}`;
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const safeTitle = (certificate.title || "Certificate").replace(/\s+/g, '_');
-            a.download = `${safeTitle}_Certificate.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            // Simple download logic
+            const link = document.createElement('a');
+            link.href = '#';
+            link.setAttribute('download', 'certificate.pdf');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
           }}
-          className="flex-1 bg-bg-surface border-2 border-border py-2.5 md:py-3 rounded-lg md:rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest text-text-primary group-hover:bg-bg-dark group-hover:text-text-on-dark group-hover:border-bg-dark transition-all flex items-center justify-center gap-2"
+          className="flex-1 border-4 border-black py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 bg-white hover:bg-zinc-50 shadow-[4px_4px_0_#000] active:shadow-none active:translate-x-1 active:translate-y-1"
         >
-          <Download className="w-3.5 h-3.5 md:w-4 md:h-4" />
-          Download
+          <Download className="w-4 h-4" />
+          DOWNLOAD
         </button>
-        <motion.button 
-          whileHover={{ scale: 1.1, rotate: 15 }}
-          whileTap={{ scale: 0.9 }}
+        <button 
           onClick={(e) => {
             e.stopPropagation();
-            window.open(`/student/certificates/${certificate.id}`, '_blank');
+            onClick?.();
           }}
-          className="p-2.5 md:p-3 border-2 border-border rounded-lg md:rounded-xl hover:bg-bg-dark hover:border-bg-dark hover:text-text-on-dark transition-all text-text-primary bg-bg-surface group-hover:border-bg-dark/20"
+          className="w-14 h-14 border-4 border-black rounded-2xl hover:bg-zinc-50 transition-all bg-white flex items-center justify-center shadow-[4px_4px_0_#000] active:shadow-none active:translate-x-1 active:translate-y-1"
         >
-          <ExternalLink className="w-4 h-4 md:w-5 md:h-5" />
-        </motion.button>
+          <ExternalLink className="w-5 h-5" />
+        </button>
       </div>
     </motion.div>
   );

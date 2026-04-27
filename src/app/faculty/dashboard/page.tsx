@@ -13,54 +13,85 @@ import { AnimatedSection, containerVariants, itemVariants } from "@/components/A
 import { useAuth } from "@/context/AuthContext";
 import { RegistryGraph } from "@/components/RegistryGraph";
 
-const LEADERBOARD = [
-  { id: "22CS001", name: "Abhishek Singh", section: "A", certCount: 8, weightage: 950 },
-  { id: "22CS042", name: "Priya Sharma", section: "B", certCount: 6, weightage: 820 },
-  { id: "22CS024", name: "Ananya Das", section: "C", certCount: 5, weightage: 710 },
-  { id: "22CS055", name: "Rahul Verma", section: "A", certCount: 4, weightage: 600 },
-];
-
-const BAR_DATA = [
-  { name: "Jan", certs: 40 },
-  { name: "Feb", certs: 30 },
-  { name: "Mar", certs: 65 },
-  { name: "Apr", certs: 85 },
-  { name: "May", certs: 120 },
-];
-
-const PIE_DATA = [
-  { name: "Verified", value: 400, color: "#10b981" },
-  { name: "Pending", value: 150, color: "#facc15" },
-  { name: "Rejected", value: 50, color: "#ef4444" },
-];
-
 export default function FacultyDashboard() {
   const { user } = useAuth();
   const { certificates } = useCertificates();
-  const [selectedStudent, setSelectedStudent] = useState<typeof LEADERBOARD[0] | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
 
   const pendingCount = certificates.filter(c => c.status === "pending").length;
   const verifiedCount = certificates.filter(c => c.status === "verified" || c.status === "approved").length;
+  const rejectedCount = certificates.filter(c => c.status === "rejected").length;
+
+  // Real-time PIE Chart
+  const PIE_DATA = [
+    { name: "Verified", value: verifiedCount, color: "#10b981" },
+    { name: "Pending", value: pendingCount, color: "#facc15" },
+    { name: "Rejected", value: rejectedCount, color: "#ef4444" },
+  ];
+
+  // Real-time Leaderboard
+  const studentMap = new Map();
+  certificates.forEach(c => {
+    if (!studentMap.has(c.studentId)) {
+      studentMap.set(c.studentId, {
+        id: c.studentId.substring(0, 8), // Short ID
+        name: c.studentName || "Unknown Student",
+        section: c.section || "N/A",
+        certCount: 0,
+        weightage: 0,
+        certs: []
+      });
+    }
+    const s = studentMap.get(c.studentId);
+    s.certCount += 1;
+    s.weightage += parseInt(c.rating || "0") || 0;
+    s.certs.push({
+      id: c.id,
+      name: c.title,
+      issuer: c.issuer,
+      date: c.issueDate
+    });
+  });
+
+  const LEADERBOARD = Array.from(studentMap.values()).sort((a, b) => b.weightage - a.weightage);
+
+  // Real-time Bar Chart
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const barMap = new Map();
+  certificates.forEach(c => {
+    const d = new Date(c.issueDate || Date.now());
+    if (!isNaN(d.getTime())) {
+      const m = monthNames[d.getMonth()];
+      barMap.set(m, (barMap.get(m) || 0) + 1);
+    }
+  });
+  
+  const BAR_DATA = Array.from(barMap.entries()).map(([name, certs]) => ({ name, certs }));
+  if (BAR_DATA.length === 0) {
+    BAR_DATA.push({ name: "Current", certs: 0 });
+  }
 
   const stats = [
     { label: "Pending Audits", count: pendingCount, icon: <AlertCircle />, color: "bg-[#ef4444] text-white border-bg-dark shadow-[6px_6px_0_#000]" },
-    { label: "Active Scholars", count: 1240, icon: <Users />, color: "bg-bg-surface text-text-primary border-bg-dark shadow-[6px_6px_0_#000]" },
-    { label: "Total Issuance", count: verifiedCount + 840, icon: <FileCheck />, color: "bg-accent text-bg-dark border-bg-dark shadow-[6px_6px_0_#000]" },
+    { label: "Active Scholars", count: LEADERBOARD.length || 1, icon: <Users />, color: "bg-bg-surface text-text-primary border-bg-dark shadow-[6px_6px_0_#000]" },
+    { label: "Total Issuance", count: certificates.length, icon: <FileCheck />, color: "bg-accent text-bg-dark border-bg-dark shadow-[6px_6px_0_#000]" },
   ];
 
   const handleDownloadSection = (sectionName: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Export logic for the entire section
-    const exportData = [
-      { RollNo: "22CS001", Name: "Abhishek Singh", Section: sectionName, Certificates: 8, Weightage: 950, Status: "Active" },
-      { RollNo: "22CS042", Name: "Priya Sharma", Section: sectionName, Certificates: 6, Weightage: 820, Status: "Active" },
-      { RollNo: "22CS024", Name: "Ananya Das", Section: sectionName, Certificates: 5, Weightage: 710, Status: "Active" },
-      { RollNo: "22CS055", Name: "Rahul Verma", Section: sectionName, Certificates: 4, Weightage: 600, Status: "Active" },
-    ];
+    // Export logic for the entire section (Now uses live data)
+    const exportData = LEADERBOARD.map(s => ({
+      ID: s.id,
+      Name: s.name,
+      Section: s.section,
+      Certificates: s.certCount,
+      Weightage: s.weightage,
+      Status: "Active"
+    }));
     
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const worksheet = XLSX.utils.json_to_sheet(exportData.length > 0 ? exportData : [{ Message: "No Data Found" }]);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, `Section_${sectionName}`);
     XLSX.writeFile(workbook, `Adamas_Section_${sectionName}_Report.xlsx`);
@@ -250,10 +281,7 @@ export default function FacultyDashboard() {
           className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6"
         >
           {[
-            { label: "Section A", count: 60, icon: "A" },
-            { label: "Section B", count: 62, icon: "B" },
-            { label: "Section C", count: 58, icon: "C" },
-            { label: "Section D", count: 61, icon: "D" }
+            { label: "Global Cohort", count: LEADERBOARD.length || 0, icon: "G" },
           ].map((cluster, i) => (
             <motion.div key={i} variants={itemVariants}>
               <div className="bento-card p-6 flex flex-col items-center text-center border-4 border-bg-dark relative overflow-hidden h-full bg-bg-surface">
@@ -265,7 +293,7 @@ export default function FacultyDashboard() {
                   <Download className="w-3.5 h-3.5 md:w-4 md:h-4 stroke-[3px]" />
                 </button>
 
-                <Link href="/faculty/sections" className="w-full flex flex-col items-center cursor-pointer pt-6">
+                <Link href="/faculty/certificates" className="w-full flex flex-col items-center cursor-pointer pt-6">
                   <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-bg-dark text-text-on-dark flex items-center justify-center text-3xl md:text-4xl font-black mb-4 md:mb-6 transition-transform duration-300">
                     {cluster.icon}
                   </div>
@@ -339,10 +367,7 @@ export default function FacultyDashboard() {
                 
                 <h3 className="text-xs md:text-lg font-black uppercase tracking-widest text-text-secondary mb-4">Recent Submissions</h3>
                 <div className="space-y-4">
-                  {[
-                    { id: "c1", name: "Google Cloud Professional", issuer: "Google", date: "2024-09-15" },
-                    { id: "c2", name: "AWS Solutions Architect", issuer: "AWS", date: "2024-08-20" }
-                  ].map((cert) => (
+                  {selectedStudent.certs.map((cert: any) => (
                     <div key={cert.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 border-2 md:border-3 border-border rounded-xl md:rounded-2xl hover:border-text-primary transition-colors group gap-4">
                       <div className="flex items-center gap-3 md:gap-4">
                         <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-bg-base flex items-center justify-center text-text-secondary group-hover:text-accent group-hover:bg-accent/10 transition-colors shrink-0">
@@ -353,9 +378,9 @@ export default function FacultyDashboard() {
                           <p className="text-[10px] md:text-xs font-bold text-text-secondary uppercase tracking-widest truncate">{cert.issuer} • {cert.date}</p>
                         </div>
                       </div>
-                      <Link href={`/faculty/certificates/${cert.id}`} className="w-full md:w-auto text-center px-4 md:px-6 py-2.5 md:py-3 bg-bg-surface border-2 border-border text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary rounded-lg md:rounded-xl hover:bg-bg-dark hover:border-bg-dark hover:text-text-on-dark transition-all">
+                      <button className="w-full md:w-auto text-center px-4 md:px-6 py-2.5 md:py-3 bg-bg-surface border-2 border-border text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary rounded-lg md:rounded-xl hover:bg-bg-dark hover:border-bg-dark hover:text-text-on-dark transition-all">
                         View Audit
-                      </Link>
+                      </button>
                     </div>
                   ))}
                 </div>

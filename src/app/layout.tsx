@@ -24,6 +24,7 @@ export const metadata: Metadata = {
   description: "Secure Digital Credentialing for Adamos University.",
 };
 
+import { ClerkProvider, SignInButton, Show, UserButton } from "@clerk/nextjs";
 import { AuthProvider } from "@/context/AuthContext";
 
 export default function RootLayout({
@@ -32,16 +33,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${fraunces.variable} ${inter.variable} ${jetBrainsMono.variable} antialiased`}
-      suppressHydrationWarning
-    >
-      <body className="bg-bg-base text-text-primary selection:bg-accent/30">
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html
+        lang="en"
+        className={`${fraunces.variable} ${inter.variable} ${jetBrainsMono.variable} antialiased`}
+        suppressHydrationWarning
+      >
+        <body className="bg-bg-base text-text-primary selection:bg-accent/30">
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

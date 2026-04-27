@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ShieldCheck, ArrowRight, ShieldAlert, CheckCircle2 } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import { CustomSelect } from "@/components/CustomSelect";
+import { SignInButton, useUser } from "@clerk/nextjs";
+import { useEffect } from "react";
 
 const BATCH_OPTIONS = [
   { label: "2021 - 2025", value: "2021-2025" },
@@ -34,27 +34,26 @@ const SECTION_OPTIONS = [
 
 export default function FacultyLoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [batch, setBatch] = useState("");
-  const [dept, setDept] = useState("");
-  const [facultyId, setFacultyId] = useState("");
-  const [sections, setSections] = useState<string[]>([]);
+  const { isLoaded, isSignedIn, user } = useUser();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    login({
-      id: "FAC2024" + Math.floor(Math.random() * 1000),
-      name: fullName || "Faculty",
-      email: email || "admin@adamas.edu",
-      role: "faculty",
-      facultyId: facultyId || "FAC-CS-" + Math.floor(Math.random() * 1000),
-      sectionsManaged: sections.length > 0 ? sections.map(s => `CS-${s}`) : ["CS-A", "CS-B"],
-    });
-    router.push("/faculty/dashboard");
-  };
+  // Auto-redirect if already signed in
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      const email = user.primaryEmailAddress?.emailAddress || "";
+      
+      if (!user.publicMetadata.onboardingComplete) {
+        router.push("/onboarding");
+        return;
+      }
+
+      // For the prototype: If it's not a student email, treat it as a faculty email
+      if (email.endsWith("@stu.adamasuniversity.ac.in")) {
+        router.push("/student/dashboard");
+      } else {
+        router.push("/faculty/dashboard");
+      }
+    }
+  }, [isLoaded, isSignedIn, user, router]);
 
   return (
     <div className="h-screen bg-bg-surface flex flex-col md:flex-row-reverse font-sans selection:bg-accent selection:text-bg-dark overflow-hidden">
@@ -72,98 +71,36 @@ export default function FacultyLoginPage() {
             FACULTY<br />
             <span className="text-accent">AUTHORITY</span>
           </h1>
-          <p className="text-text-secondary font-bold mb-4 md:mb-6 text-[9px] md:text-xs uppercase tracking-widest leading-none">
-            Authenticate to access registry controls
-          </p>
+          <div className="space-y-6">
+            <p className="text-text-secondary font-bold mb-4 md:mb-6 text-[9px] md:text-xs uppercase tracking-widest leading-none">
+              Sign in with your authority credentials to access registry controls
+            </p>
 
-          <form onSubmit={handleLogin} className="space-y-3 md:space-y-4">
-            <div className="space-y-1.5 md:space-y-2">
-              <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Full Name</label>
-              <input 
-                type="text" 
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="input-field"
-                placeholder="Dr. Abhishek Singh"
-                required
-              />
+            <SignInButton mode="modal">
+              <button className="w-full btn-primary py-6 text-lg md:text-xl shadow-[6px_6px_0_#09090b] hover:translate-y-[2px] hover:shadow-[4px_4px_0_#09090b] transition-all flex items-center justify-center gap-4">
+                <svg className="w-6 h-6" viewBox="0 0 23 23" xmlns="http://www.w3.org/2000/svg">
+                  <path fill="#f35325" d="M1 1h10v10H1z"/>
+                  <path fill="#81bc06" d="M12 1h10v10H12z"/>
+                  <path fill="#05a6f0" d="M1 12h10v10H1z"/>
+                  <path fill="#ffba08" d="M12 12h10v10H12z"/>
+                </svg>
+                Authorize via Microsoft
+                <ArrowRight className="w-6 h-6" />
+              </button>
+            </SignInButton>
+
+            <div className="flex items-center gap-4 py-4">
+              <div className="h-[2px] flex-1 bg-border" />
+              <span className="text-[10px] font-black uppercase text-text-secondary tracking-[0.2em]">Institutional SSO</span>
+              <div className="h-[2px] flex-1 bg-border" />
             </div>
 
-            <div className="space-y-1.5 md:space-y-2">
-              <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Authority ID (Email)</label>
-              <input 
-                type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input-field"
-                placeholder="admin@adamas.edu"
-                required
-              />
-            </div>
+            <p className="text-center text-[10px] font-bold text-text-secondary uppercase tracking-widest leading-relaxed">
+              Only <span className="text-accent">@adamasuniversity.ac.in</span> accounts<br />
+              are authorized to access this restricted area.
+            </p>
+          </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5 md:space-y-2">
-                <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Batch</label>
-                <CustomSelect 
-                  options={BATCH_OPTIONS}
-                  value={batch}
-                  onChange={setBatch}
-                  placeholder="Select Batch"
-                />
-              </div>
-              <div className="space-y-1.5 md:space-y-2">
-                <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Department</label>
-                <CustomSelect 
-                  options={DEPT_OPTIONS}
-                  value={dept}
-                  onChange={setDept}
-                  placeholder="Select Dept"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5 md:space-y-2">
-                <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Faculty ID No.</label>
-                <input 
-                  type="text" 
-                  value={facultyId}
-                  onChange={(e) => setFacultyId(e.target.value)}
-                  className="input-field"
-                  placeholder="e.g. FAC-2024"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-1.5 md:space-y-2">
-                <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Sections Managed</label>
-                <CustomSelect 
-                  options={SECTION_OPTIONS}
-                  value={sections}
-                  onChange={setSections}
-                  multiple={true}
-                  placeholder="Select Sections"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5 md:space-y-2">
-              <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Master Key</label>
-              <input 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input-field"
-                placeholder="••••••••"
-                required
-              />
-            </div>
-
-            <button type="submit" className="w-full btn-primary py-4 text-base md:text-lg mt-4">
-              Authorize
-              <ArrowRight className="w-5 h-5" />
-            </button>
-          </form>
 
           <div className="mt-8 md:mt-12 text-center">
             <p className="text-[10px] md:text-xs font-bold text-text-secondary uppercase tracking-widest">

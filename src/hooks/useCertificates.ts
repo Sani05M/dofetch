@@ -2,97 +2,92 @@
 
 import { useState, useEffect } from "react";
 import { Certificate } from "@/components/CertificateCard";
-
-const STORAGE_KEY = "adamos_certificates_v2";
-
-const INITIAL_CERTS: Certificate[] = [
-  {
-    id: "CERT001",
-    title: "Google Cloud Professional Architect",
-    issuer: "Google",
-    studentName: "Abhishek Singh",
-    studentId: "STU2024001",
-    type: "Cloud & DevOps",
-    issueDate: "2024-09-15",
-    rating: "Platinum",
-    status: "verified",
-    fileType: "PDF"
-  },
-  {
-    id: "CERT002",
-    title: "AWS Certified Developer Associate",
-    issuer: "Amazon Web Services",
-    studentName: "Abhishek Singh",
-    studentId: "STU2024001",
-    type: "Cloud & DevOps",
-    issueDate: "2024-08-10",
-    rating: "Platinum",
-    status: "verified",
-    fileType: "PDF"
-  },
-  {
-    id: "CERT003",
-    title: "React Advanced Patterns",
-    issuer: "Coursera",
-    studentName: "Abhishek Singh",
-    studentId: "STU2024001",
-    type: "Technical / Programming",
-    issueDate: "2024-07-05",
-    rating: "Gold",
-    status: "pending",
-    fileType: "IMG"
-  }
-];
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/context/AuthContext";
 
 export function useCertificates() {
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  const fetchCertificates = async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      
+      let query = supabase.from("certificates").select("*, profiles!inner(*)");
+
+      if (user.role === "student") {
+        query = query.eq("student_id", user.id);
+      } else if (user.role === "faculty") {
+        // Fetch certificates from students in sections managed by this faculty
+        // Note: profiles!inner(*) ensures we only get certificates where the student profile matches
+        // the filter below
+        const sections = user.sectionsManaged || [];
+        if (sections.length > 0) {
+          query = query.in("profiles.section", sections);
+        } else {
+          // If faculty manages no sections, show nothing or everything? 
+          // Usually better to show nothing to avoid leakage
+          setCertificates([]);
+          setLoading(false);
+          return;
+        }
+      }
+
+      const { data, error } = await query.order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const formattedCerts: Certificate[] = (data || []).map((c: any) => ({
+        id: c.id,
+        title: c.title,
+        issuer: c.issuer,
+        studentName: c.profiles?.full_name || "Unknown Scholar",
+        studentId: c.student_id,
+        section: c.profiles?.section || "N/A",
+        batch: c.profiles?.batch || "N/A",
+        type: c.type,
+        issueDate: c.issue_date,
+        rating: c.score ? (c.score > 90 ? "Platinum" : c.score > 75 ? "Gold" : "Silver") : "Pending",
+        status: c.status,
+        fileType: "PDF",
+        fileId: c.telegram_file_id,
+        extractedText: c.extracted_text
+      }));
+
+      setCertificates(formattedCerts);
+    } catch (error) {
+      console.error("Error fetching certificates:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        // Migration: Ensure title exists (handle legacy 'name' field if it exists)
-        const migrated = parsed.map((c: any) => ({
-          ...c,
-          title: c.title || c.name || "Untitled Artifact",
-          studentName: c.studentName || (c.studentId ? "Abhishek Singh" : "Authorized Scholar")
-        }));
-        setCertificates(migrated);
-      } catch (e) {
-        setCertificates(INITIAL_CERTS);
-      }
-    } else {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_CERTS));
-      setCertificates(INITIAL_CERTS);
+    fetchCertificates();
+  }, [user?.id]);
+
+  const addCertificate = async (cert: any) => {
+    // This is now handled by the /api/upload route
+    // But we keep it as a refresh trigger if needed
+    await fetchCertificates();
+  };
+
+  const updateStatus = async (id: string, status: string, rating?: any) => {
+    try {
+      const { error } = await supabase
+        .from("certificates")
+        .update({ status, score: rating })
+        .eq("id", id);
+      
+      if (error) throw error;
+      await fetchCertificates();
+    } catch (e) {
+      console.error("Error updating status:", e);
     }
-    setLoading(false);
-  }, []);
-
-  const save = (newCerts: Certificate[]) => {
-    setCertificates(newCerts);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newCerts));
   };
 
-  const addCertificate = (cert: Omit<Certificate, "id" | "status" | "rating" | "fileType">) => {
-    const newCert: Certificate = {
-      ...cert,
-      id: `CERT-${Math.random().toString(36).substr(2, 9)}`,
-      status: "pending",
-      rating: "Pending",
-      fileType: "PDF" // Default to PDF if not provided
-    };
-    save([newCert, ...certificates]);
-    return newCert;
-  };
-
-  const updateStatus = (id: string, status: "verified" | "pending" | "rejected" | "approved", rating?: any) => {
-    const updated = certificates.map(c => 
-      c.id === id ? { ...c, status, rating: rating || c.rating } : c
-    );
-    save(updated);
-  };
-
-  return { certificates, addCertificate, updateStatus, loading };
+  return { certificates, addCertificate, updateStatus, loading, refresh: fetchCertificates };
 }

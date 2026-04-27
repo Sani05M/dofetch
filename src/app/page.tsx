@@ -25,6 +25,7 @@ import {
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { motion, AnimatePresence } from "framer-motion";
 import { AnimatedSection, containerVariants, itemVariants } from "@/components/AnimatedSection";
+import { UserButton, Show } from "@clerk/nextjs";
 
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -54,11 +55,26 @@ export default function Home() {
               <Link href="/login/faculty" className="text-xs md:text-sm font-black uppercase tracking-tight hover:text-accent transition-colors">
                 Faculty
               </Link>
-              <motion.div whileTap={{ scale: 0.95 }}>
-                <Link href="/login/student" className="bg-accent text-[#000] px-5 md:px-6 py-2.5 rounded-xl text-xs md:text-sm font-black shadow-[4px_4px_0px_#000] border-2 border-bg-dark block transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_#000]">
-                  Vault
-                </Link>
-              </motion.div>
+              
+              <Show when="signed-in">
+                <div className="p-1 rounded-xl border border-border bg-bg-surface shadow-sm">
+                  <UserButton 
+                    appearance={{
+                      elements: {
+                        userButtonAvatarBox: "w-8 h-8 md:w-9 md:h-9 rounded-lg",
+                      }
+                    }}
+                  />
+                </div>
+              </Show>
+
+              <Show when="signed-out">
+                <motion.div whileTap={{ scale: 0.95 }}>
+                  <Link href="/login/student" className="bg-accent text-[#000] px-5 md:px-6 py-2.5 rounded-xl text-xs md:text-sm font-black shadow-[4px_4px_0px_#000] border-2 border-bg-dark block transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_#000]">
+                    Vault
+                  </Link>
+                </motion.div>
+              </Show>
             </div>
             
             {/* Mobile Menu Button */}

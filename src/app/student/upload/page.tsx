@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useCertificates } from "@/hooks/useCertificates";
+import { motion } from "framer-motion";
 import { Upload, Zap, CheckCircle2, Loader2, FileText, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -22,19 +23,34 @@ export default function StudentUpload() {
     issueDate: new Date().toISOString().split("T")[0],
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedFile) return;
+    
     setIsUploading(true);
     
-    // Simulate mesh synchronization
-    setTimeout(() => {
-      addCertificate({
-        ...formData,
-        studentId: user?.id || "STU-GEN-" + Math.floor(Math.random() * 1000),
-        studentName: user?.name || "Anonymous Scholar",
+    try {
+      const payload = new FormData();
+      payload.append("file", selectedFile);
+      payload.append("title", formData.title);
+      payload.append("type", formData.type);
+      payload.append("issuer", formData.issuer);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: payload,
       });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to synchronize with mesh");
+      }
+
       router.push("/student/dashboard");
-    }, 2500);
+    } catch (error: any) {
+      alert("Synchronization Error: " + error.message);
+      setIsUploading(false);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
