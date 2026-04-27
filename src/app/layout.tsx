@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   description: "Secure Digital Credentialing for Adamos University.",
 };
 
-import { ClerkProvider, SignInButton, Show, UserButton } from "@clerk/nextjs";
+import { ClerkProvider, SignInButton, UserButton } from "@clerk/nextjs";
 import { AuthProvider } from "@/context/AuthContext";
 
 export default function RootLayout({
