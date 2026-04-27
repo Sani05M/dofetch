@@ -251,6 +251,19 @@ export default function AuditDetailPage({ params }: { params: Promise<{ id: stri
                   <div className="font-black text-xs uppercase tracking-tight text-bg-dark">{certificate.issue_date || '—'}</div>
                 </div>
               </div>
+
+              {/* Name Mismatch Alert */}
+              {certificate.extracted_text?.name_mismatch_flag && (
+                <div className="mt-2 bg-red-50 border-2 border-red-300 rounded-xl p-3 flex items-start gap-2">
+                  <ShieldAlert className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-[8px] font-black uppercase tracking-widest text-red-600">Identity Mismatch</div>
+                    <div className="text-[10px] font-bold text-red-700 leading-tight mt-0.5">
+                      Certificate issued to: <span className="font-black">{certificate.extracted_text?.recipient_name || 'Unknown'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

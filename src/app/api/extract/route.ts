@@ -7,6 +7,35 @@ import crypto from "crypto";
 // Allow up to 60 seconds for Gemini Vision to process the certificate
 export const maxDuration = 60;
 
+/**
+ * Simple fuzzy name match: normalizes both names and checks if either
+ * name contains the other, or if they share a significant overlap.
+ */
+function namesMatch(certName: string | null, uploaderName: string | null): { match: boolean; confidence: string } {
+  if (!certName || !uploaderName) return { match: false, confidence: "no_name_on_cert" };
+  
+  const normalize = (n: string) => n.toLowerCase().replace(/[^a-z\s]/g, "").replace(/\s+/g, " ").trim();
+  const a = normalize(certName);
+  const b = normalize(uploaderName);
+  
+  if (!a || !b) return { match: false, confidence: "no_name_on_cert" };
+  
+  // Exact match
+  if (a === b) return { match: true, confidence: "exact" };
+  
+  // One contains the other (handles "Abhishek" vs "Abhishek Singh")
+  if (a.includes(b) || b.includes(a)) return { match: true, confidence: "partial" };
+  
+  // Check word overlap: if at least 2 words match between both names
+  const wordsA = a.split(" ");
+  const wordsB = b.split(" ");
+  const commonWords = wordsA.filter(w => w.length > 1 && wordsB.includes(w));
+  if (commonWords.length >= 2) return { match: true, confidence: "word_overlap" };
+  if (commonWords.length === 1 && (wordsA.length === 1 || wordsB.length === 1)) return { match: true, confidence: "single_word" };
+  
+  return { match: false, confidence: "mismatch" };
+}
+
 export async function POST(req: Request) {
   try {
     const { userId } = await auth();
@@ -51,9 +80,46 @@ export async function POST(req: Request) {
       );
     }
 
+    // 5. Identity Cross-Reference: Compare certificate recipient vs uploader
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", userId)
+      .single();
+
+    const uploaderName = profile?.full_name || null;
+    const certRecipient = extractedData.recipient_name || null;
+    const nameCheck = namesMatch(certRecipient, uploaderName);
+
+    let finalScore = extractedData.score;
+    let finalReasoning = extractedData.authenticity_reasoning;
+    let nameMismatchFlag = false;
+
+    if (!nameCheck.match && nameCheck.confidence === "mismatch") {
+      // Heavy penalty: the certificate belongs to someone else
+      const penalty = Math.min(finalScore, 20);
+      finalScore = Math.max(0, finalScore - penalty);
+      nameMismatchFlag = true;
+      finalReasoning = `⚠️ NAME MISMATCH: Certificate is issued to "${certRecipient}" but uploaded by "${uploaderName}". Score penalized by -${penalty}. ` + finalReasoning;
+    } else if (!nameCheck.match && nameCheck.confidence === "no_name_on_cert") {
+      // Mild penalty: can't verify identity
+      finalScore = Math.max(0, finalScore - 5);
+      finalReasoning = `⚠️ NO RECIPIENT NAME: Could not identify the recipient on this certificate. Score penalized by -5. ` + finalReasoning;
+    }
+
     return NextResponse.json({ 
       success: true, 
-      data: { ...extractedData, file_hash: fileHash } 
+      data: { 
+        ...extractedData, 
+        score: finalScore,
+        authenticity_reasoning: finalReasoning,
+        file_hash: fileHash,
+        recipient_name: certRecipient,
+        uploader_name: uploaderName,
+        name_match: nameCheck.match,
+        name_match_confidence: nameCheck.confidence,
+        name_mismatch_flag: nameMismatchFlag
+      } 
     });
   } catch (error: any) {
     console.error("Extraction Error:", error);

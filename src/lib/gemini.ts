@@ -55,6 +55,7 @@ export async function extractCertificateData(file: File) {
       Extract the following in pure JSON format:
       {
         "title": "string (the name/title of the course, achievement, or certificate)",
+        "recipient_name": "string (the FULL NAME of the person this certificate was issued TO. This is the name printed on the certificate as the recipient/awardee. If no name is visible, output null)",
         "issuer": "string (the name of the issuing authority/company/institution)",
         "issue_date": "YYYY-MM-DD (extract the issue date, if none found use null)",
         "type": "string (Classify it strictly as one of: 'Academic Artifact', 'Professional Cert', 'Extracurricular', or 'Other')",

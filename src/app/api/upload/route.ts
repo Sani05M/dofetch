@@ -49,6 +49,9 @@ export async function POST(req: Request) {
     const authenticity_reasoning = formData.get("authenticity_reasoning") as string || "No reasoning provided.";
     const file_hash = formData.get("file_hash") as string || null;
     const verification_link = formData.get("verification_link") as string || null;
+    const recipient_name = formData.get("recipient_name") as string || null;
+    const name_match = formData.get("name_match") === "true";
+    const name_mismatch_flag = formData.get("name_mismatch_flag") === "true";
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -74,7 +77,10 @@ export async function POST(req: Request) {
           raw_filename: file.name, 
           authenticity_reasoning: authenticity_reasoning,
           file_hash: file_hash,
-          verification_link: verification_link
+          verification_link: verification_link,
+          recipient_name: recipient_name,
+          name_match: name_match,
+          name_mismatch_flag: name_mismatch_flag
         }
       })
       .select()

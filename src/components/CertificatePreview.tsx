@@ -79,13 +79,8 @@ export function CertificatePreview({ certificate, isOpen, onClose, onDelete }: C
   useEffect(() => {
     if (isOpen && certificate) {
       setHasVerified(certificate.status === 'approved');
-      // @ts-ignore - extracted_text is JSONB
-      // @ts-ignore - extracted_text is JSONB
-      if (certificate.extractedText?.authenticity_reasoning) {
-        setVerificationReason(certificate.extractedText.authenticity_reasoning);
-      } else if (certificate.extractedText?.ai_reasoning) {
-        setVerificationReason(certificate.extractedText.ai_reasoning);
-      }
+      // AI reasoning is internal forensic data — only faculty should see it
+      setVerificationReason(null);
     }
   }, [isOpen, certificate]);
 

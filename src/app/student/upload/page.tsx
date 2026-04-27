@@ -96,6 +96,11 @@ export default function StudentUpload() {
       if (extractedAiData.verificationLink) {
         payload.append("verification_link", extractedAiData.verificationLink);
       }
+      if (extractedAiData.recipientName) {
+        payload.append("recipient_name", extractedAiData.recipientName);
+      }
+      payload.append("name_match", extractedAiData.nameMatch.toString());
+      payload.append("name_mismatch_flag", extractedAiData.nameMismatchFlag.toString());
 
       const res = await fetch("/api/upload", {
         method: "POST",
@@ -130,7 +135,7 @@ export default function StudentUpload() {
   };
 
   const [isExtracting, setIsExtracting] = useState(false);
-  const [extractedAiData, setExtractedAiData] = useState({ score: 0, reasoning: "", fileHash: "", verificationLink: "" });
+  const [extractedAiData, setExtractedAiData] = useState({ score: 0, reasoning: "", fileHash: "", verificationLink: "", recipientName: "", nameMatch: true, nameMismatchFlag: false });
 
   const handleExtraction = async (file: File) => {
     if (isQuotaReached) {
@@ -175,7 +180,20 @@ export default function StudentUpload() {
         reasoning: data.authenticity_reasoning || "No reasoning provided",
         fileHash: data.file_hash || "",
         verificationLink: data.extracted_verification_link || "",
+        recipientName: data.recipient_name || "",
+        nameMatch: data.name_match ?? true,
+        nameMismatchFlag: data.name_mismatch_flag ?? false,
       });
+
+      // Show warning if name doesn't match
+      if (data.name_mismatch_flag) {
+        setCustomAlert({
+          show: true,
+          title: "Identity Mismatch",
+          message: `The certificate appears to be issued to "${data.recipient_name}" — not your registered name. Score has been penalized. If this is correct, you may still proceed.`,
+          type: 'error'
+        });
+      }
     } catch (error) {
       console.error("Extraction failed", error);
       setSelectedFile(null);
