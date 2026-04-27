@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Discover the best available Gemini model for this API key via REST.
-async function resolveModel(): Promise<{ genAI: GoogleGenerativeAI; modelName: string }> {
+export async function resolveModel(): Promise<{ genAI: GoogleGenerativeAI; modelName: string }> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
 
@@ -18,6 +18,28 @@ async function resolveModel(): Promise<{ genAI: GoogleGenerativeAI; modelName: s
     } catch { continue; }
   }
   return { genAI, modelName: "gemini-1.5-flash" }; // Fallback
+}
+
+/**
+ * Executes a Gemini request with automatic retry logic for 429 (Rate Limit) errors.
+ * Uses exponential backoff with jitter to maximize success on free-tier keys.
+ */
+export async function safeGenerateContent(model: any, prompt: any, retries = 3, delay = 1000): Promise<any> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await model.generateContent(prompt);
+    } catch (error: any) {
+      const isRateLimit = error.message?.includes("429") || error.message?.includes("quota") || error.message?.includes("Too Many Requests");
+      
+      if (isRateLimit && i < retries - 1) {
+        const waitTime = delay * Math.pow(2, i) + Math.random() * 1000;
+        console.log(`[Gemini] Rate limit hit. Retrying in ${Math.round(waitTime)}ms... (Attempt ${i + 1}/${retries})`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        continue;
+      }
+      throw error;
+    }
+  }
 }
 
 export async function extractCertificateData(file: File) {
@@ -39,7 +61,7 @@ export async function extractCertificateData(file: File) {
       Only return JSON.
     `;
 
-    const result = await model.generateContent([
+    const result = await safeGenerateContent(model, [
       prompt,
       { inlineData: { data: base64Data, mimeType: file.type } },
     ]);
