@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { CustomSelect } from "@/components/CustomSelect";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { useCertificates } from "@/hooks/useCertificates";
-import { motion } from "framer-motion";
-import { Upload, Zap, CheckCircle2, Loader2, FileText, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Upload, Zap, CheckCircle2, Loader2, FileText, ArrowRight, AlertTriangle, ShieldAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { cn } from "@/lib/utils";
 
 export default function StudentUpload() {
   const { addCertificate } = useCertificates();
@@ -17,6 +19,13 @@ export default function StudentUpload() {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [customAlert, setCustomAlert] = useState<{show: boolean, title: string, message: string, type: 'error' | 'warning'}>({
+    show: false,
+    title: '',
+    message: '',
+    type: 'error'
+  });
+  
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     title: "",
@@ -24,6 +33,47 @@ export default function StudentUpload() {
     type: "Academic Artifact",
     issueDate: new Date().toISOString().split("T")[0],
   });
+
+  const [quota, setQuota] = useState({ used: 0, limit: 10, resetAt: "" });
+  const [loadingQuota, setLoadingQuota] = useState(true);
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    const fetchQuota = async () => {
+      try {
+        const res = await fetch("/api/quota");
+        if (res.ok) {
+          const data = await res.json();
+          setQuota({ used: data.used, limit: data.limit, resetAt: data.reset_at });
+        }
+      } catch (err) {
+        console.error("Failed to fetch quota");
+      } finally {
+        setLoadingQuota(false);
+      }
+    };
+    fetchQuota();
+  }, []);
+
+  useEffect(() => {
+    if (!quota.resetAt) return;
+    const interval = setInterval(() => {
+      const now = new Date();
+      const reset = new Date(quota.resetAt);
+      const diff = reset.getTime() - now.getTime();
+      if (diff <= 0) {
+        setTimeLeft("0h 0m");
+        clearInterval(interval);
+        return;
+      }
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      setTimeLeft(`${hours}h ${mins}m`);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [quota.resetAt]);
+
+  const isQuotaReached = quota.used >= quota.limit;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +109,12 @@ export default function StudentUpload() {
 
       router.push("/student/dashboard");
     } catch (error: any) {
-      alert("Synchronization Error: " + error.message);
+      setCustomAlert({
+        show: true,
+        title: "Synchronization Error",
+        message: error.message,
+        type: 'error'
+      });
       setIsUploading(false);
     }
   };
@@ -78,6 +133,16 @@ export default function StudentUpload() {
   const [extractedAiData, setExtractedAiData] = useState({ score: 0, reasoning: "", fileHash: "", verificationLink: "" });
 
   const handleExtraction = async (file: File) => {
+    if (isQuotaReached) {
+      setCustomAlert({
+        show: true,
+        title: "Daily Limit Reached",
+        message: `You have reached your daily limit of ${quota.limit} uploads. Please try again tomorrow.`,
+        type: 'warning'
+      });
+      return;
+    }
+
     setSelectedFile(file);
     setIsExtracting(true);
     try {
@@ -87,7 +152,12 @@ export default function StudentUpload() {
       
       if (!res.ok) {
         const error = await res.json();
-        alert(error.error || "Failed to analyze artifact");
+        setCustomAlert({
+          show: true,
+          title: "Extraction Failed",
+          message: error.error || "Failed to analyze artifact",
+          type: 'error'
+        });
         setSelectedFile(null);
         setIsExtracting(false);
         return;
@@ -140,6 +210,30 @@ export default function StudentUpload() {
             <p className="text-text-secondary font-bold text-[10px] md:text-xs uppercase tracking-widest">Connect your credential to the institutional mesh</p>
           </div>
         </div>
+
+        {/* Daily Quota Tracker */}
+        {!loadingQuota && (
+          <div className="mb-8 p-4 md:p-6 bg-bg-surface rounded-2xl border-2 border-border relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-accent" />
+            <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-2 mb-3">
+              <div>
+                <div className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary mb-1">Daily Upload Quota</div>
+                <div className="text-xl md:text-2xl font-black uppercase text-text-primary tracking-tighter">
+                  {quota.used} <span className="text-text-secondary text-sm md:text-lg">/ {quota.limit} USED</span>
+                </div>
+              </div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-accent bg-accent/10 px-2 py-1 rounded-md">
+                Resets in {timeLeft || "..."}
+              </div>
+            </div>
+            <div className="w-full bg-bg-dark rounded-full h-3 overflow-hidden border border-white/5">
+              <div 
+                className={`h-full transition-all duration-1000 ${isQuotaReached ? 'bg-red-500' : 'bg-accent'}`}
+                style={{ width: `${Math.min(100, (quota.used / quota.limit) * 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
           <div className="space-y-6">
@@ -251,12 +345,24 @@ export default function StudentUpload() {
               )}
             </div>
 
+            {extractedAiData.score > 0 && extractedAiData.score < 25 && (
+              <div className="p-4 bg-orange-500/10 border-2 border-orange-500/50 rounded-2xl flex gap-4 items-start">
+                <AlertTriangle className="w-6 h-6 text-orange-500 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-black uppercase tracking-widest text-orange-500 mb-1">Verification Warning</h4>
+                  <p className="text-[10px] md:text-xs font-bold text-text-secondary leading-relaxed">
+                    Our automated system flagged inconsistencies in this artifact. You may proceed, but it has been marked for strict manual review by the faculty.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <button 
               type="submit"
-              disabled={!selectedFile || isUploading}
+              disabled={!selectedFile || isUploading || isQuotaReached}
               className={`
                 w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-sm flex items-center justify-center gap-3 transition-all
-                ${!selectedFile || isUploading 
+                ${(!selectedFile || isUploading || isQuotaReached)
                   ? "bg-bg-surface border-4 border-border text-text-secondary cursor-not-allowed" 
                   : "bg-bg-dark text-text-on-dark border-4 border-accent shadow-[6px_6px_0_var(--color-accent)] hover:-translate-y-1 hover:shadow-[8px_8px_0_var(--color-accent)] active:translate-x-1 active:translate-y-1 active:shadow-none"
                 }
@@ -290,6 +396,45 @@ export default function StudentUpload() {
             <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white mb-4">MESH SYNCHRONIZATION</h2>
             <p className="text-accent font-black uppercase tracking-widest text-[10px] md:text-sm max-w-md">Distributing encrypted artifact payload across the institutional validation nodes...</p>
           </div>
+        )}
+
+        {/* Custom Alert Modal - rendered via portal to escape layout constraints */}
+        {typeof window !== 'undefined' && createPortal(
+          <AnimatePresence>
+            {customAlert.show && (
+              <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6">
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setCustomAlert({...customAlert, show: false})}
+                  className="absolute inset-0 bg-black/70 backdrop-blur-md"
+                />
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                  className="bg-bg-surface border-4 border-bg-dark shadow-[12px_12px_0_#000] p-8 md:p-10 rounded-[2.5rem] w-full max-w-md relative z-10 text-center"
+                >
+                  <div className={cn(
+                    "w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0_#000] border-4 border-bg-dark",
+                    customAlert.type === 'error' ? "bg-red-500" : "bg-accent"
+                  )}>
+                    {customAlert.type === 'error' ? <ShieldAlert className="w-10 h-10 text-white" /> : <Zap className="w-10 h-10 text-bg-dark" />}
+                  </div>
+                  <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-text-primary mb-2">{customAlert.title}</h3>
+                  <p className="text-text-secondary font-bold text-xs uppercase tracking-widest mb-8 leading-relaxed">{customAlert.message}</p>
+                  <button 
+                    onClick={() => setCustomAlert({...customAlert, show: false})}
+                    className="w-full py-4 bg-bg-dark text-white font-black uppercase tracking-widest text-xs rounded-2xl border-4 border-bg-dark hover:bg-zinc-800 transition-colors shadow-[4px_4px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                  >
+                    Understood
+                  </button>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
       </div>
     </DashboardLayout>

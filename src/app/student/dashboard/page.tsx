@@ -8,7 +8,7 @@ import { useCertificates } from "@/hooks/useCertificates";
 import { CertificateCard, Certificate } from "@/components/CertificateCard";
 import { CertificatePreview } from "@/components/CertificatePreview";
 import { AnimatedSection, containerVariants, itemVariants } from "@/components/AnimatedSection";
-import { LayoutGrid, CheckCircle2, Clock, Plus, Zap, ArrowUpRight, RefreshCcw } from "lucide-react";
+import { LayoutGrid, CheckCircle2, Clock, Plus, Zap, ArrowUpRight, RefreshCcw, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 
@@ -19,14 +19,31 @@ export default function StudentDashboard() {
   const { certificates, refresh } = useCertificates();
   const { user } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [quota, setQuota] = useState({ used: 0, limit: 10 });
+  const [loadingQuota, setLoadingQuota] = useState(true);
+
+  const fetchQuota = async () => {
+    try {
+      const res = await fetch("/api/quota");
+      if (res.ok) {
+        const data = await res.json();
+        setQuota({ used: data.used, limit: data.limit });
+      }
+    } catch (err) {
+      console.error("Failed to fetch quota");
+    } finally {
+      setLoadingQuota(false);
+    }
+  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await refresh();
+    await Promise.all([refresh(), fetchQuota()]);
     setTimeout(() => setIsRefreshing(false), 1000);
   };
 
   React.useEffect(() => {
+    fetchQuota();
     const interval = setInterval(handleRefresh, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -96,8 +113,30 @@ export default function StudentDashboard() {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-16 md:mb-20"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-16 md:mb-20"
       >
+        {/* Daily Quota Card */}
+        <motion.div variants={itemVariants} whileHover={{ x: -1, y: -1 }} whileTap={{ x: 3, y: 3 }}>
+          <Link href="/student/upload" className={cn(
+            "bento-3d flex flex-col justify-between h-40 md:h-48 transition-all active:shadow-none p-6 md:p-8 rounded-2xl md:rounded-3xl",
+            loadingQuota || quota.used < quota.limit ? "bg-bg-surface border-border shadow-[4px_4px_0_#000]" : "bg-red-500 border-bg-dark shadow-[4px_4px_0_#000] text-white"
+          )}>
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-bg-surface rounded-xl flex items-center justify-center text-text-primary shadow-sm border-2 border-border">
+                <Activity className="w-5 h-5 md:w-6 md:h-6" />
+              </div>
+              <ArrowUpRight className="w-5 h-5 md:w-6 md:h-6 opacity-30 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <div>
+              <span className="text-4xl md:text-6xl font-black tracking-tighter leading-none">
+                {loadingQuota ? "-" : quota.used}
+              </span>
+              <span className="text-xl md:text-2xl font-black text-white/50">/{loadingQuota ? "-" : quota.limit}</span>
+              <p className="text-[10px] md:text-sm font-black uppercase tracking-widest mt-1 md:mt-2 opacity-80">Daily Quota</p>
+            </div>
+          </Link>
+        </motion.div>
+
         {stats.map((stat, i) => {
           const href = stat.label === "Total Artifacts" 
             ? "/student/certificates" 

@@ -16,6 +16,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // 0. Enforce Daily Upload Quota (10 per day)
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+
+    const { count, error: countError } = await supabase
+      .from("certificates")
+      .select("*", { count: 'exact', head: true })
+      .eq("student_id", userId)
+      .gte("created_at", today.toISOString());
+
+    if (countError) {
+      console.error("Quota Check Error:", countError);
+      return NextResponse.json({ error: "Failed to verify daily quota." }, { status: 500 });
+    }
+
+    if (count !== null && count >= 9999) {
+      return NextResponse.json({ 
+        error: "Daily Limit Reached: You have reached your limit of 9999 certificate uploads for today. Please try again tomorrow." 
+      }, { status: 429 });
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const title = formData.get("title") as string;

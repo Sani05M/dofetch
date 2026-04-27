@@ -80,7 +80,10 @@ export function CertificatePreview({ certificate, isOpen, onClose, onDelete }: C
     if (isOpen && certificate) {
       setHasVerified(certificate.status === 'approved');
       // @ts-ignore - extracted_text is JSONB
-      if (certificate.extractedText?.ai_reasoning) {
+      // @ts-ignore - extracted_text is JSONB
+      if (certificate.extractedText?.authenticity_reasoning) {
+        setVerificationReason(certificate.extractedText.authenticity_reasoning);
+      } else if (certificate.extractedText?.ai_reasoning) {
         setVerificationReason(certificate.extractedText.ai_reasoning);
       }
     }
@@ -216,6 +219,14 @@ export function CertificatePreview({ certificate, isOpen, onClose, onDelete }: C
             className="w-full max-w-7xl bg-bg-surface border-4 border-bg-dark shadow-[24px_24px_0_#000] relative z-10 flex flex-col overflow-hidden rounded-[2.5rem] h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* AI FRAUD ALERT BADGE */}
+            {certificate.score > 0 && certificate.score < 25 && certificate.status === "pending" && (
+              <div className="bg-red-600 border-b-4 border-bg-dark text-white p-3 flex items-center justify-center gap-3 z-[60] animate-pulse">
+                <ShieldAlert className="w-5 h-5 shrink-0" />
+                <span className="font-black uppercase tracking-[0.2em] text-[10px] md:text-xs">AI FRAUD ALERT: Manual Review Required</span>
+              </div>
+            )}
+
             {/* Header / Actions Bar */}
             <div className="px-8 py-5 bg-bg-dark flex items-center justify-between z-50">
               <div className="flex items-center gap-4">
@@ -412,13 +423,19 @@ export function CertificatePreview({ certificate, isOpen, onClose, onDelete }: C
                       <motion.div 
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="p-4 bg-accent/10 border-2 border-accent/20 rounded-2xl"
+                        className={`p-4 border-2 rounded-2xl ${certificate.score > 0 && certificate.score < 25 ? 'bg-red-500/10 border-red-500/20' : 'bg-accent/10 border-accent/20'}`}
                       >
                         <div className="flex items-center gap-2 mb-2">
-                          <ShieldCheck className="w-4 h-4 text-accent" />
-                          <span className="text-[8px] font-black uppercase tracking-widest text-accent">Verification Context</span>
+                          {certificate.score > 0 && certificate.score < 25 ? (
+                            <ShieldAlert className="w-4 h-4 text-red-500" />
+                          ) : (
+                            <ShieldCheck className="w-4 h-4 text-accent" />
+                          )}
+                          <span className={`text-[8px] font-black uppercase tracking-widest ${certificate.score > 0 && certificate.score < 25 ? 'text-red-500' : 'text-accent'}`}>
+                            {certificate.score > 0 && certificate.score < 25 ? 'Fraud Detection Reasoning' : 'Verification Context'}
+                          </span>
                         </div>
-                        <p className="text-[10px] font-medium text-bg-dark/70 leading-relaxed italic">
+                        <p className="text-[10px] font-bold text-bg-dark/80 leading-relaxed italic">
                           "{verificationReason}"
                         </p>
                       </motion.div>
