@@ -231,8 +231,11 @@ export default function AuditDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
                 <div className="min-w-0">
                   <div className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Student</div>
-                  <div className="font-black text-xs uppercase tracking-tight text-bg-dark truncate">{certificate.profiles?.full_name || 'Unknown'}</div>
-                  <div className="text-[7px] font-bold text-zinc-400 uppercase">{certificate.profiles?.section} • {certificate.profiles?.batch}</div>
+                  <div className="font-black text-xs uppercase tracking-tight text-bg-dark truncate">{certificate.profiles?.username || certificate.profiles?.full_name || 'Unknown'}</div>
+                  <div className="text-[7px] font-bold text-zinc-400 uppercase">
+                    {certificate.profiles?.username && certificate.profiles?.full_name ? `${certificate.profiles.full_name} • ` : ''}
+                    {certificate.profiles?.section} • {certificate.profiles?.batch}
+                  </div>
                 </div>
               </div>
 

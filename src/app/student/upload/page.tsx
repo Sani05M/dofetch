@@ -19,6 +19,7 @@ export default function StudentUpload() {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [stagedPath, setStagedPath] = useState<string | null>(null);
   const [customAlert, setCustomAlert] = useState<{show: boolean, title: string, message: string, type: 'error' | 'warning'}>({
     show: false,
     title: '',
@@ -33,6 +34,16 @@ export default function StudentUpload() {
     type: "Academic Artifact",
     issueDate: new Date().toISOString().split("T")[0],
   });
+
+  const resetForm = () => {
+    setSelectedFile(null);
+    setStagedPath(null);
+    setFormData({ title: "", issuer: "", type: "Academic Artifact", issueDate: new Date().toISOString().split("T")[0] });
+    setExtractedAiData({ score: 0, reasoning: "", fileHash: "", verificationLink: "", recipientName: "", nameMatch: true, nameMismatchFlag: false });
+    localStorage.removeItem("upload_form_data");
+    localStorage.removeItem("extracted_ai_data");
+    fetch("/api/upload/status", { method: "DELETE" }).catch(() => {});
+  };
 
   const [quota, setQuota] = useState({ used: 0, limit: 10, resetAt: "" });
   const [loadingQuota, setLoadingQuota] = useState(true);
@@ -56,6 +67,89 @@ export default function StudentUpload() {
   }, []);
 
   useEffect(() => {
+    const checkActiveTasks = async () => {
+      try {
+        const res = await fetch("/api/upload/status");
+        if (res.ok) {
+          const data = await res.json();
+          // If we were synchronizing, restore the full-screen loader
+          if (data.status === "synchronizing") {
+            setIsUploading(true);
+            const poll = setInterval(async () => {
+              const r = await fetch("/api/upload/status");
+              const d = await r.json();
+              if (d.status === "idle" || !d.status) {
+                localStorage.removeItem("upload_form_data");
+                localStorage.removeItem("extracted_ai_data");
+                clearInterval(poll);
+                router.push("/student/dashboard");
+              }
+            }, 2000);
+          } 
+          // If we were extracting, start polling for results
+          else if (data.status === "extracting") {
+            setIsExtracting(true);
+            const poll = setInterval(async () => {
+              const r = await fetch("/api/upload/status");
+              const d = await r.json();
+              
+              if (d.status === "completed" && d.result) {
+                const aiData = d.result;
+                const newFormData = {
+                  title: aiData.title || "",
+                  issuer: aiData.issuer || "",
+                  type: aiData.type === 'Professional Cert' || aiData.type === 'Academic Artifact' ? aiData.type : 'Academic Artifact',
+                  issueDate: aiData.issue_date || new Date().toISOString().split("T")[0],
+                };
+                const newAiData = {
+                  score: aiData.score || 0,
+                  reasoning: aiData.authenticity_reasoning || "No reasoning provided",
+                  fileHash: aiData.file_hash || "",
+                  verificationLink: aiData.extracted_verification_link || "",
+                  recipientName: aiData.recipient_name || "",
+                  nameMatch: aiData.name_match ?? true,
+                  nameMismatchFlag: aiData.name_mismatch_flag ?? false,
+                };
+                
+                setFormData(newFormData);
+                setExtractedAiData(newAiData);
+                if (d.staged_path) setStagedPath(d.staged_path);
+                
+                localStorage.setItem("upload_form_data", JSON.stringify(newFormData));
+                localStorage.setItem("extracted_ai_data", JSON.stringify(newAiData));
+                
+                setIsExtracting(false);
+                clearInterval(poll);
+              } else if (!d.status || d.status === "idle") {
+                setIsExtracting(false);
+                clearInterval(poll);
+              }
+            }, 3000);
+
+            // Safety timeout
+            setTimeout(() => { clearInterval(poll); }, 60000);
+          }
+        }
+      } catch (e) {
+        console.error("Task check failed", e);
+      }
+    };
+    checkActiveTasks();
+
+    // Load persisted form data
+    const savedForm = localStorage.getItem("upload_form_data");
+    const savedAi = localStorage.getItem("extracted_ai_data");
+    if (savedForm) setFormData(JSON.parse(savedForm));
+    if (savedAi) setExtractedAiData(JSON.parse(savedAi));
+
+    // If we have saved data but no file/stagedPath, we should check status again to see if we can get the stagedPath
+    const fetchStatus = async () => {
+      const res = await fetch("/api/upload/status");
+      const d = await res.json();
+      if (d.staged_path) setStagedPath(d.staged_path);
+    };
+    if (savedForm && !selectedFile && !stagedPath) fetchStatus();
+
     if (!quota.resetAt) return;
     const interval = setInterval(() => {
       const now = new Date();
@@ -77,13 +171,19 @@ export default function StudentUpload() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFile) return;
+    if (!selectedFile && !stagedPath) return;
     
     setIsUploading(true);
     
     try {
       const payload = new FormData();
-      payload.append("file", selectedFile);
+      if (selectedFile) {
+        payload.append("file", selectedFile);
+      }
+      if (stagedPath) {
+        payload.append("staged_path", stagedPath);
+      }
+      
       payload.append("title", formData.title);
       payload.append("type", formData.type);
       payload.append("issuer", formData.issuer);
@@ -112,6 +212,8 @@ export default function StudentUpload() {
         throw new Error(error.error || "Failed to synchronize with mesh");
       }
 
+      localStorage.removeItem("upload_form_data");
+      localStorage.removeItem("extracted_ai_data");
       router.push("/student/dashboard");
     } catch (error: any) {
       setCustomAlert({
@@ -149,6 +251,7 @@ export default function StudentUpload() {
     }
 
     setSelectedFile(file);
+    setStagedPath(null);
     setIsExtracting(true);
     try {
       const payload = new FormData();
@@ -169,13 +272,13 @@ export default function StudentUpload() {
       }
 
       const { data } = await res.json();
-      setFormData({
+      const newFormData = {
         title: data.title || "",
         issuer: data.issuer || "",
         type: data.type === 'Professional Cert' || data.type === 'Academic Artifact' ? data.type : 'Academic Artifact',
         issueDate: data.issue_date || new Date().toISOString().split("T")[0],
-      });
-      setExtractedAiData({
+      };
+      const newAiData = {
         score: data.score || 0,
         reasoning: data.authenticity_reasoning || "No reasoning provided",
         fileHash: data.file_hash || "",
@@ -183,7 +286,14 @@ export default function StudentUpload() {
         recipientName: data.recipient_name || "",
         nameMatch: data.name_match ?? true,
         nameMismatchFlag: data.name_mismatch_flag ?? false,
-      });
+      };
+
+      setFormData(newFormData);
+      setExtractedAiData(newAiData);
+
+      // Persist to localStorage
+      localStorage.setItem("upload_form_data", JSON.stringify(newFormData));
+      localStorage.setItem("extracted_ai_data", JSON.stringify(newAiData));
 
       // Show warning if name doesn't match
       if (data.name_mismatch_flag) {
@@ -199,6 +309,8 @@ export default function StudentUpload() {
       setSelectedFile(null);
     } finally {
       setIsExtracting(false);
+      // Clear extraction status from Redis if we finish (success or error)
+      fetch("/api/upload/status", { method: "DELETE" }).catch(() => {});
     }
   };
 
@@ -339,15 +451,36 @@ export default function StudentUpload() {
                   </div>
                   <p className="font-black text-sm uppercase tracking-widest text-bg-dark">Scanning Artifact...</p>
                   <p className="text-[10px] text-text-secondary font-bold mt-1 uppercase tracking-widest">Extracting Metadata via AI</p>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsExtracting(false);
+                      fetch("/api/upload/status", { method: "DELETE" }).catch(() => {});
+                    }}
+                    className="mt-6 px-4 py-2 bg-bg-surface border-2 border-border rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-accent hover:text-accent transition-colors"
+                  >
+                    Force Reset
+                  </button>
                 </motion.div>
-              ) : selectedFile ? (
+              ) : (selectedFile || stagedPath) ? (
                 <>
                   <div className="w-20 h-20 bg-green-500 rounded-2xl flex items-center justify-center shadow-[4px_4px_0_#166534]">
                     <FileText className="w-10 h-10 text-white" />
                   </div>
-                  <div className="text-center">
-                    <p className="font-black uppercase tracking-tighter text-text-primary truncate max-w-[200px]">{selectedFile.name}</p>
+                  <div className="text-center px-6">
+                    <p className="font-black uppercase tracking-tighter text-text-primary truncate max-w-[200px]">
+                      {selectedFile ? selectedFile.name : "Staged Artifact Recovered"}
+                    </p>
                     <p className="text-[10px] font-bold text-green-600 uppercase">Payload Ready for Sync</p>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        resetForm();
+                      }}
+                      className="mt-4 px-3 py-1.5 bg-bg-surface border-2 border-border rounded-lg text-[8px] font-black uppercase tracking-widest hover:border-red-500 hover:text-red-500 transition-colors"
+                    >
+                      Remove Artifact
+                    </button>
                   </div>
                 </>
               ) : (
@@ -377,10 +510,10 @@ export default function StudentUpload() {
 
             <button 
               type="submit"
-              disabled={!selectedFile || isUploading || isQuotaReached}
+              disabled={(!selectedFile && !stagedPath) || isUploading || isQuotaReached}
               className={`
                 w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-sm flex items-center justify-center gap-3 transition-all
-                ${(!selectedFile || isUploading || isQuotaReached)
+                ${((!selectedFile && !stagedPath) || isUploading || isQuotaReached)
                   ? "bg-bg-surface border-4 border-border text-text-secondary cursor-not-allowed" 
                   : "bg-bg-dark text-text-on-dark border-4 border-accent shadow-[6px_6px_0_var(--color-accent)] hover:-translate-y-1 hover:shadow-[8px_8px_0_var(--color-accent)] active:translate-x-1 active:translate-y-1 active:shadow-none"
                 }

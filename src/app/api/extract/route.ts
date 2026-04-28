@@ -4,6 +4,7 @@ import { extractCertificateData } from "@/lib/gemini";
 import { supabase } from "@/lib/supabase";
 import { rateLimit } from "@/lib/rateLimit";
 import { updateStudentStreak } from "@/lib/gamification";
+import { redis } from "@/lib/redis";
 import crypto from "crypto";
 
 // Allow up to 60 seconds for Gemini Vision to process the certificate
@@ -45,6 +46,13 @@ export async function POST(req: Request) {
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Set status to extracting
+    await redis.set(`upload_status:${userId}`, { 
+      status: "extracting", 
+      message: "AI is analyzing your artifact...",
+      timestamp: Date.now() 
+    }, 300); // 5 min TTL
 
     // Rate limit: max 5 extractions per minute per user
     const limit = rateLimit(userId, 5, 60 * 1000);
@@ -92,6 +100,21 @@ export async function POST(req: Request) {
       );
     }
 
+    // 2.5 Stage File in Supabase Storage (Resilience)
+    // This allows recovery if the user refreshes before clicking "Sync"
+    const stagedPath = `${userId}/${fileHash}`;
+    
+    // Ensure bucket exists (one-time check would be better, but this is safer for now)
+    await supabase.storage.createBucket("draft-artifacts", { public: false }).catch(() => {});
+
+    const { error: stageError } = await supabase.storage
+      .from("draft-artifacts")
+      .upload(stagedPath, file, { upsert: true });
+
+    if (stageError) {
+      console.warn("Staging failed, but proceeding with extraction:", stageError);
+    }
+
     // 3. AI Extraction (Gemini Vision)
     const extractedData = await extractCertificateData(file);
 
@@ -133,21 +156,35 @@ export async function POST(req: Request) {
     // 6. Update Gamification (Streak)
     await updateStudentStreak(userId);
 
+    const result = { 
+      ...extractedData, 
+      score: finalScore,
+      authenticity_reasoning: finalReasoning,
+      file_hash: fileHash,
+      recipient_name: certRecipient,
+      uploader_name: uploaderName,
+      name_match: nameCheck.match,
+      name_match_confidence: nameCheck.confidence,
+      name_mismatch_flag: nameMismatchFlag
+    };
+
+    // Store result in Redis so the frontend can retrieve it after refresh
+    await redis.set(`upload_status:${userId}`, { 
+      status: "completed", 
+      result,
+      staged_path: stagedPath,
+      timestamp: Date.now() 
+    }, 600); // Increased TTL to 10 min
+
     return NextResponse.json({ 
       success: true, 
-      data: { 
-        ...extractedData, 
-        score: finalScore,
-        authenticity_reasoning: finalReasoning,
-        file_hash: fileHash,
-        recipient_name: certRecipient,
-        uploader_name: uploaderName,
-        name_match: nameCheck.match,
-        name_match_confidence: nameCheck.confidence,
-        name_mismatch_flag: nameMismatchFlag
-      } 
+      data: result 
     });
   } catch (error: any) {
+    // Clear status on error
+    const { userId } = await auth();
+    if (userId) await redis.del(`upload_status:${userId}`);
+
     console.error("Extraction Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

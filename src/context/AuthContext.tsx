@@ -22,6 +22,7 @@ interface AuthContextType {
   user: User | null;
   login: (user: User) => void;
   logout: () => void;
+  refresh: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -34,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [user, setUser] = useState<User | null>(null);
 
-  useEffect(() => {
+  const syncUser = () => {
     if (isLoaded && isSignedIn && clerkUser) {
       const email = clerkUser.primaryEmailAddress?.emailAddress || "";
       const metadata = clerkUser.publicMetadata as any;
@@ -53,7 +54,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else if (isLoaded && !isSignedIn) {
       setUser(null);
     }
+  };
+
+  useEffect(() => {
+    syncUser();
   }, [isLoaded, isSignedIn, clerkUser]);
+
+  const refresh = async () => {
+    if (clerkUser) {
+      await clerkUser.reload();
+      syncUser();
+    }
+  };
 
   const login = (userData: User) => {
     // Deprecated, handled by Clerk UI
@@ -69,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isAuthLoading = !isLoaded || (isLoaded && isSignedIn && user === null);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading: isAuthLoading }}>
+    <AuthContext.Provider value={{ user, login, logout, refresh, isLoading: isAuthLoading }}>
       {children}
     </AuthContext.Provider>
   );

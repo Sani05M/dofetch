@@ -16,6 +16,17 @@ export async function PATCH(request: Request) {
     delete updates.id;
     delete updates.role;
     delete updates.email;
+
+    // Fetch current profile to check if full_name is locked
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name_locked")
+      .eq("id", userId)
+      .single();
+
+    if (profile?.full_name_locked) {
+      delete updates.full_name;
+    }
     
     // We use the service_role key to bypass RLS for this specific update, 
     // but we enforce security by strictly filtering by the authenticated user's ID

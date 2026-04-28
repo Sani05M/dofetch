@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     // 3. Fetch profile + quota check
     const { data: profile, error: fetchError } = await supabaseAdmin
       .from("profiles")
-      .select("id, role, edit_count, max_edits")
+      .select("id, role, edit_count, max_edits, full_name_locked")
       .eq("id", userId)
       .single();
 
@@ -78,7 +78,23 @@ export async function POST(req: NextRequest) {
       edit_count: profile.edit_count + 1,
     };
 
-    if (display_name?.trim()) updatePayload.full_name   = display_name.trim();
+    if (display_name?.trim()) {
+      // If full_name is not locked, we can update it (Legal Name)
+      // If it is locked, we ONLY update username (Public Display)
+      if (!profile.full_name_locked) {
+        updatePayload.full_name = display_name.trim();
+        // Once they set it here, we don't necessarily lock it yet, 
+        // unless it's their last edit or they are finishing onboarding.
+        // But for this correction path, we'll let them fix it if unlocked.
+      }
+      updatePayload.username = display_name.trim();
+    }
+    
+    // Explicitly handle username if provided separately
+    if (body.username?.trim()) {
+      updatePayload.username = body.username.trim();
+    }
+
     if (department?.trim())   updatePayload.department  = department.trim();
 
     if (profile.role === "student") {
@@ -147,7 +163,7 @@ export async function GET() {
     const { data, error } = await supabaseAdmin
       .from("profiles")
       .select(
-        "id, role, full_name, department, roll_no, reg_no, section, batch, sections_managed, batches_managed, faculty_id, edit_count, max_edits"
+        "id, role, full_name, username, full_name_locked, department, roll_no, reg_no, section, batch, sections_managed, batches_managed, faculty_id, edit_count, max_edits"
       )
       .eq("id", userId)
       .single();

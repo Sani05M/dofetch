@@ -109,7 +109,7 @@ export function PortfolioViewer({ profile, certificates }: PortfolioViewerProps)
             {/* Clean Avatar */}
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-4xl md:text-5xl font-black text-accent uppercase shadow-xl relative overflow-hidden">
                <div className="absolute inset-0 bg-accent/5" />
-               {profile.full_name?.charAt(0)}
+               {(profile.username || profile.full_name)?.charAt(0)}
             </div>
             
             <div className="flex-1">
@@ -127,7 +127,7 @@ export function PortfolioViewer({ profile, certificates }: PortfolioViewerProps)
               </div>
               
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-none mb-4 text-white">
-                {profile.full_name}
+                {profile.username || profile.full_name}
               </h1>
               <p className="text-zinc-400 font-medium text-lg md:text-xl max-w-2xl leading-relaxed">
                 {profile.bio || "Academic high-achiever at Adamas University. Focused on building future-ready skills and verified credentials."}

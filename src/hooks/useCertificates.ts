@@ -72,7 +72,7 @@ export function useCertificates() {
           id: c.id,
           title: c.title,
           issuer: c.issuer,
-          studentName: c.profiles?.full_name || "Unknown Scholar",
+          studentName: c.profiles?.username || c.profiles?.full_name || "Unknown Scholar",
           studentId: c.student_id,
           section: c.profiles?.section || "N/A",
           batch: c.profiles?.batch || "N/A",

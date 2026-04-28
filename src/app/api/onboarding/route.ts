@@ -25,6 +25,7 @@ export async function POST(req: Request) {
         id:               userId,
         email:            email,
         full_name:        fullName,
+        full_name_locked: true, // Lock the name after onboarding
         role:             role,
         department:       department || null,
         batch:            batch || null,

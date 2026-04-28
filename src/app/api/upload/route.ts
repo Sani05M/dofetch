@@ -3,6 +3,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { uploadToTelegram } from "@/lib/telegram";
 import { supabase } from "@/lib/supabase";
 import { extractCertificateData } from "@/lib/gemini";
+import { redis } from "@/lib/redis";
 
 // Allow up to 60 seconds for Gemini Vision to process the certificate
 export const maxDuration = 60;
@@ -15,6 +16,13 @@ export async function POST(req: Request) {
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Set status to synchronizing
+    await redis.set(`upload_status:${userId}`, { 
+      status: "synchronizing", 
+      message: "Distributing artifact payload across the mesh...",
+      timestamp: Date.now() 
+    }, 300); // 5 min TTL
 
     // 0. Enforce Daily Upload Quota (10 per day)
     const today = new Date();
@@ -38,7 +46,8 @@ export async function POST(req: Request) {
     }
 
     const formData = await req.formData();
-    const file = formData.get("file") as File;
+    let file = formData.get("file") as File | null;
+    const stagedPath = formData.get("staged_path") as string | null;
     const title = formData.get("title") as string;
     const type = formData.get("type") as string;
     
@@ -53,8 +62,24 @@ export async function POST(req: Request) {
     const name_match = formData.get("name_match") === "true";
     const name_mismatch_flag = formData.get("name_mismatch_flag") === "true";
 
+    // If no file is provided but a staged path exists, recover the file from Supabase
+    if (!file && stagedPath) {
+      const { data, error: downloadError } = await supabase.storage
+        .from("draft-artifacts")
+        .download(stagedPath);
+
+      if (downloadError) {
+        console.error("Failed to download staged file:", downloadError);
+        return NextResponse.json({ error: "Failed to recover staged artifact. Please upload again." }, { status: 400 });
+      }
+
+      // Reconstruct File object (Telegram needs the buffer/blob)
+      const fileName = title ? `${title}.pdf` : "artifact.pdf";
+      file = new File([data], fileName, { type: data.type }) as File;
+    }
+
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+      return NextResponse.json({ error: "No file provided or staged artifact found." }, { status: 400 });
     }
 
     // 0.5 File Security: Limit to 10MB and valid types
@@ -100,8 +125,20 @@ export async function POST(req: Request) {
 
     if (error) throw error;
 
+    // Clear status on success
+    await redis.del(`upload_status:${userId}`);
+
+    // Cleanup staged file if it exists
+    if (stagedPath) {
+      await supabase.storage.from("draft-artifacts").remove([stagedPath]);
+    }
+
     return NextResponse.json({ success: true, certificate: data });
   } catch (error: any) {
+    // Clear status on error
+    const { userId } = await auth();
+    if (userId) await redis.del(`upload_status:${userId}`);
+
     console.error("Upload Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

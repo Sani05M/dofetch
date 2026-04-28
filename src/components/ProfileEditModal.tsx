@@ -36,9 +36,10 @@ const SECTIONS = ["A", "B", "C", "D", "E", "F"];
 // ─── Format validators ────────────────────────────────────────────────────────
 const ROLL_REGEX = /^[A-Z]+\/\d{2}\/[A-Z]+\/\d{4}\/\d{3,4}$/;
 const REG_REGEX  = /^AU\/\d{4}\/\d{6,8}$/;
-
 interface ProfileData {
   full_name:        string;
+  username:         string;
+  full_name_locked: boolean;
   department:       string;
   roll_no:          string;
   reg_no:           string;
@@ -238,7 +239,7 @@ interface Props {
 }
 
 export function ProfileEditModal({ isOpen, onClose }: Props) {
-  const { user }            = useAuth();
+  const { user, refresh }   = useAuth();
   const { user: clerkUser } = useUser();
   const overlayRef          = useRef<HTMLDivElement>(null);
 
@@ -250,6 +251,7 @@ export function ProfileEditModal({ isOpen, onClose }: Props) {
 
   // form
   const [displayName,     setDisplayName]     = useState("");
+  const [username,        setUsername]        = useState("");
   const [department,      setDepartment]      = useState("");
   const [rollNo,          setRollNo]          = useState("");
   const [regNo,           setRegNo]           = useState("");
@@ -258,6 +260,7 @@ export function ProfileEditModal({ isOpen, onClose }: Props) {
   const [sectionsManaged, setSectionsManaged] = useState<string[]>([]);
   const [batchesManaged,  setBatchesManaged]  = useState<string[]>([]);
   const [facultyId,       setFacultyId]       = useState("");
+  const [showCorrection,  setShowCorrection]  = useState(false);
 
   // ── Fetch on open ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -270,6 +273,7 @@ export function ProfileEditModal({ isOpen, onClose }: Props) {
         if (d.error) { setError(d.error); return; }
         setProfile(d);
         setDisplayName(d.full_name            || "");
+        setUsername(d.username              || "");
         setDepartment(d.department             || "");
         setRollNo(d.roll_no                    || "");
         setRegNo(d.reg_no                      || "");
@@ -278,6 +282,11 @@ export function ProfileEditModal({ isOpen, onClose }: Props) {
         setSectionsManaged(d.sections_managed  || []);
         setBatchesManaged(d.batches_managed    || []);
         setFacultyId(d.faculty_id              || "");
+        
+        // Auto-show correction if name looks like a username (contains numbers)
+        if (d.full_name && /\d/.test(d.full_name) && !d.full_name_locked) {
+          setShowCorrection(true);
+        }
       })
       .catch(() => setError("Failed to load profile."))
       .finally(() => setLoading(false));
@@ -309,7 +318,7 @@ export function ProfileEditModal({ isOpen, onClose }: Props) {
     if (!canSubmit) return;
     setSaving(true); setError(null);
 
-    const payload: Record<string, any> = { display_name: displayName, department };
+    const payload: Record<string, any> = { display_name: displayName, username, department };
 
     if (user?.role === "student") {
       payload.roll_no = rollNo;
@@ -332,11 +341,11 @@ export function ProfileEditModal({ isOpen, onClose }: Props) {
 
       if (!res.ok) { setError(data.error || "Update failed."); return; }
 
-      // Reload Clerk → triggers AuthContext → name updates everywhere instantly
-      await clerkUser?.reload();
+      // Reload Clerk and AuthContext → updates everything instantly
+      await refresh();
 
       setSuccess(true);
-      setProfile((p) =>
+      setProfile((p: ProfileData | null) =>
         p ? { ...p, editsRemaining: data.editsRemaining, edit_count: p.max_edits - data.editsRemaining } : p
       );
       setTimeout(onClose, 1600);
@@ -418,12 +427,52 @@ export function ProfileEditModal({ isOpen, onClose }: Props) {
               ) : (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
-                  {/* Display name — both */}
-                  <TextField
-                    label="Display Name" icon={<User className="w-3 h-3" />}
-                    value={displayName} onChange={setDisplayName}
-                    placeholder="Your full name"
-                  />
+                  {/* Name section — Dual Identity */}
+                  <div className="space-y-4">
+                    {/* Public persona */}
+                    <TextField
+                      label="Display Username" icon={<User className="w-3 h-3" />}
+                      value={username} onChange={setUsername}
+                      placeholder="e.g. Abhi3hekkk"
+                    />
+
+                    {/* Legal Identity — Correction logic */}
+                    <div className="p-4 bg-bg-base border-2 border-border rounded-2xl relative overflow-hidden">
+                      <label className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-text-secondary mb-2">
+                        <Lock className="w-3 h-3" /> Legal Registry Name
+                      </label>
+                      
+                      {!showCorrection && profile?.full_name ? (
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="font-bold text-sm text-text-primary uppercase tracking-tight">
+                            {profile.full_name}
+                          </p>
+                          {!profile.full_name_locked && (
+                            <button 
+                              type="button"
+                              onClick={() => setShowCorrection(true)}
+                              className="text-[9px] font-black uppercase tracking-widest text-accent hover:underline"
+                            >
+                              Correction
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <input
+                          type="text"
+                          value={displayName}
+                          onChange={(e) => setDisplayName(e.target.value)}
+                          placeholder="Legal Full Name (Institutional)"
+                          className="w-full bg-transparent font-black text-sm uppercase tracking-tight outline-none border-b border-accent/30 pb-1 focus:border-accent transition-all"
+                        />
+                      )}
+                      
+                      <p className="text-[8px] font-bold text-text-secondary/60 uppercase tracking-widest mt-2 leading-relaxed">
+                        This name must match your ID for certificate verification. 
+                        {profile?.full_name_locked ? " Locked by system." : ""}
+                      </p>
+                    </div>
+                  </div>
 
                   {/* Department — both — custom dropdown */}
                   <SelectField

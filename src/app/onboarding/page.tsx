@@ -10,6 +10,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   
   const [loading, setLoading] = useState(false);
+  const [fullName, setFullName] = useState(user?.fullName || "");
   const [department, setDepartment] = useState("");
   const [batch, setBatch] = useState("");
   const [section, setSection] = useState("");
@@ -38,7 +39,7 @@ export default function OnboardingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           role: role,
-          fullName: user?.fullName || email.split("@")[0],
+          fullName: fullName,
           email: email,
           department: department,
           batch: isStudent ? batch : null,
@@ -109,6 +110,21 @@ export default function OnboardingPage() {
           </div>
 
           <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-black uppercase tracking-widest text-text-primary mb-2">Legal Full Name (For Certificate Verification)</label>
+              <input 
+                type="text"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Enter your real name..."
+                className="w-full bg-bg-base border-3 border-border rounded-xl px-4 py-3 text-sm font-bold text-text-primary placeholder:text-text-secondary/30 focus:border-text-primary focus:outline-none shadow-[2px_2px_0_var(--color-border)] hover:shadow-[4px_4px_0_var(--color-text-primary)] transition-all"
+              />
+              <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest mt-2 flex items-center gap-1 italic">
+                ⚠️ This name will be locked and used to verify all certificate uploads.
+              </p>
+            </div>
+
             <div>
               <label className="block text-xs font-black uppercase tracking-widest text-text-primary mb-2">Department / Program</label>
               <select 
