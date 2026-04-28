@@ -25,6 +25,8 @@ export default function OnboardingPage() {
   const [department, setDepartment] = useState("");
   const [batch, setBatch] = useState("");
   const [section, setSection] = useState("");
+  const [rollNumber, setRollNumber] = useState("");
+  const [regNumber, setRegNumber] = useState("");
   const [sectionsManaged, setSectionsManaged] = useState<string[]>([]);
   
   // Determine role based on email (prototype logic)
@@ -55,6 +57,8 @@ export default function OnboardingPage() {
           department: department,
           batch: isStudent ? batch : null,
           section: isStudent ? section : null,
+          rollNumber: isStudent ? rollNumber : null,
+          regNumber: isStudent ? regNumber : null,
           sectionsManaged: !isStudent ? sectionsManaged : null,
         }),
       });
@@ -153,38 +157,65 @@ export default function OnboardingPage() {
             </div>
 
             {isStudent && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-widest text-text-primary mb-2">Academic Batch</label>
-                  <select 
-                    required
-                    value={batch}
-                    onChange={(e) => setBatch(e.target.value)}
-                    className="w-full bg-bg-base border-3 border-border rounded-xl px-4 py-3 text-sm font-bold text-text-primary focus:border-text-primary focus:outline-none appearance-none shadow-[2px_2px_0_var(--color-border)] hover:shadow-[4px_4px_0_var(--color-text-primary)] transition-all"
-                  >
-                    <option value="" disabled>Select...</option>
-                    <option value="2021">2021-2025</option>
-                    <option value="2022">2022-2026</option>
-                    <option value="2023">2023-2027</option>
-                    <option value="2024">2024-2028</option>
-                  </select>
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-widest text-text-primary mb-2">Academic Batch</label>
+                    <select 
+                      required
+                      value={batch}
+                      onChange={(e) => setBatch(e.target.value)}
+                      className="w-full bg-bg-base border-3 border-border rounded-xl px-4 py-3 text-sm font-bold text-text-primary focus:border-text-primary focus:outline-none appearance-none shadow-[2px_2px_0_var(--color-border)] hover:shadow-[4px_4px_0_var(--color-text-primary)] transition-all"
+                    >
+                      <option value="" disabled>Select...</option>
+                      <option value="2021">2021-2025</option>
+                      <option value="2022">2022-2026</option>
+                      <option value="2023">2023-2027</option>
+                      <option value="2024">2024-2028</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-widest text-text-primary mb-2">Section</label>
+                    <select 
+                      required
+                      value={section}
+                      onChange={(e) => setSection(e.target.value)}
+                      className="w-full bg-bg-base border-3 border-border rounded-xl px-4 py-3 text-sm font-bold text-text-primary focus:border-text-primary focus:outline-none appearance-none shadow-[2px_2px_0_var(--color-border)] hover:shadow-[4px_4px_0_var(--color-text-primary)] transition-all"
+                    >
+                      <option value="" disabled>Select...</option>
+                      <option value="A">Section A</option>
+                      <option value="B">Section B</option>
+                      <option value="C">Section C</option>
+                      <option value="D">Section D</option>
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-widest text-text-primary mb-2">Section</label>
-                  <select 
-                    required
-                    value={section}
-                    onChange={(e) => setSection(e.target.value)}
-                    className="w-full bg-bg-base border-3 border-border rounded-xl px-4 py-3 text-sm font-bold text-text-primary focus:border-text-primary focus:outline-none appearance-none shadow-[2px_2px_0_var(--color-border)] hover:shadow-[4px_4px_0_var(--color-text-primary)] transition-all"
-                  >
-                    <option value="" disabled>Select...</option>
-                    <option value="A">Section A</option>
-                    <option value="B">Section B</option>
-                    <option value="C">Section C</option>
-                    <option value="D">Section D</option>
-                  </select>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-widest text-text-primary mb-2">University Roll No.</label>
+                    <input 
+                      type="text"
+                      required
+                      value={rollNumber}
+                      onChange={(e) => setRollNumber(e.target.value)}
+                      placeholder="e.g. AU22010..."
+                      className="w-full bg-bg-base border-3 border-border rounded-xl px-4 py-3 text-sm font-bold text-text-primary placeholder:text-text-secondary/30 focus:border-text-primary focus:outline-none shadow-[2px_2px_0_var(--color-border)] hover:shadow-[4px_4px_0_var(--color-text-primary)] transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-widest text-text-primary mb-2">Registration No.</label>
+                    <input 
+                      type="text"
+                      required
+                      value={regNumber}
+                      onChange={(e) => setRegNumber(e.target.value)}
+                      placeholder="e.g. 2022123..."
+                      className="w-full bg-bg-base border-3 border-border rounded-xl px-4 py-3 text-sm font-bold text-text-primary placeholder:text-text-secondary/30 focus:border-text-primary focus:outline-none shadow-[2px_2px_0_var(--color-border)] hover:shadow-[4px_4px_0_var(--color-text-primary)] transition-all"
+                    />
+                  </div>
                 </div>
-              </div>
+              </>
             )}
 
             {!isStudent && (

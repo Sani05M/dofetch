@@ -15,6 +15,10 @@ export default function StudentProfilePage() {
   const [portfolioSlug, setPortfolioSlug] = useState("");
   const [bio, setBio] = useState("");
   const [isPublic, setIsPublic] = useState(false);
+  const [rollNumber, setRollNumber] = useState("");
+  const [regNumber, setRegNumber] = useState("");
+  const [department, setDepartment] = useState("");
+  const [section, setSection] = useState("");
   
   const [isSaving, setIsSaving] = useState(false);
 
@@ -25,6 +29,10 @@ export default function StudentProfilePage() {
       setPortfolioSlug(profile.portfolio_slug || "");
       setBio(profile.bio || "");
       setIsPublic(profile.is_public || false);
+      setRollNumber(profile.roll_number || "");
+      setRegNumber(profile.reg_number || "");
+      setDepartment(profile.department || "");
+      setSection(profile.section || "");
     }
   }, [profile]);
 
@@ -35,7 +43,11 @@ export default function StudentProfilePage() {
       username: username.trim() || null,
       portfolio_slug: portfolioSlug.trim() || null,
       bio: bio.trim() || null,
-      is_public: isPublic
+      is_public: isPublic,
+      roll_number: rollNumber.trim() || null,
+      reg_number: regNumber.trim() || null,
+      department: department.trim() || null,
+      section: section.trim() || null
     });
     setIsSaving(false);
     if (!error) {
@@ -100,22 +112,46 @@ export default function StudentProfilePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-4 border-t border-border/50">
-              <div className="space-y-1">
-                <span className="text-[10px] font-black text-text-secondary uppercase tracking-widest">Reg No.</span>
-                <p className="font-mono font-bold text-text-primary text-sm">{user?.regNo || "AU/2022/..."}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-6 border-t border-border/50">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-1">Registration No.</label>
+                <input 
+                  type="text" 
+                  value={regNumber}
+                  onChange={(e) => setRegNumber(e.target.value)}
+                  className="input-field w-full text-sm font-mono"
+                  placeholder="REG/2022/..."
+                />
               </div>
-              <div className="space-y-1">
-                <span className="text-[10px] font-black text-text-secondary uppercase tracking-widest">Roll Number</span>
-                <p className="font-mono font-bold text-text-primary text-sm">{user?.rollNo || "22CS..."}</p>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-1">Roll Number</label>
+                <input 
+                  type="text" 
+                  value={rollNumber}
+                  onChange={(e) => setRollNumber(e.target.value)}
+                  className="input-field w-full text-sm font-mono"
+                  placeholder="22CS..."
+                />
               </div>
-              <div className="space-y-1">
-                <span className="text-[10px] font-black text-text-secondary uppercase tracking-widest">Dept</span>
-                <p className="font-bold text-text-primary text-sm">{profile?.department || "CSE"}</p>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-1">Dept</label>
+                <input 
+                  type="text" 
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  className="input-field w-full text-sm"
+                  placeholder="CSE"
+                />
               </div>
-              <div className="space-y-1">
-                <span className="text-[10px] font-black text-text-secondary uppercase tracking-widest">Section</span>
-                <p className="font-bold text-text-primary text-sm">{profile?.section || "A"}</p>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-1">Section</label>
+                <input 
+                  type="text" 
+                  value={section}
+                  onChange={(e) => setSection(e.target.value)}
+                  className="input-field w-full text-sm"
+                  placeholder="A"
+                />
               </div>
             </div>
           </div>

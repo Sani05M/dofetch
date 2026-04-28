@@ -13,6 +13,8 @@ export interface Certificate {
   fileId?: string; // Link to Telegram file_id
   section?: string;
   batch?: string;
+  rollNumber?: string;
+  regNumber?: string;
   type: string;
   issueDate: string;
   rating: string;

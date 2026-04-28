@@ -76,6 +76,8 @@ export function useCertificates() {
           studentId: c.student_id,
           section: c.profiles?.section || "N/A",
           batch: c.profiles?.batch || "N/A",
+          rollNumber: c.profiles?.roll_number || "N/A",
+          regNumber: c.profiles?.reg_number || "N/A",
           type: c.type,
           issueDate: c.issue_date,
           rating: c.score ? (c.score > 90 ? "Platinum" : c.score > 75 ? "Gold" : "Silver") : "Pending",

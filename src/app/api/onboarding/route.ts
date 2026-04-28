@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { role, department, batch, section, sectionsManaged, fullName, email } = body;
+    const { role, department, batch, section, rollNumber, regNumber, sectionsManaged, fullName, email } = body;
 
     // 1. Upsert the profile — seed edit_count=0, max_edits by role
     const { error: dbError } = await supabaseAdmin
@@ -30,6 +30,8 @@ export async function POST(req: Request) {
         department:       department || null,
         batch:            batch || null,
         section:          section || null,
+        roll_number:      rollNumber || null,
+        reg_number:       regNumber || null,
         sections_managed: sectionsManaged || null,
         edit_count:       0,
         max_edits:        role === "faculty" ? 5 : 1,
@@ -48,6 +50,8 @@ export async function POST(req: Request) {
         onboardingComplete: true,
         role:              role,
         section:           section,
+        rollNumber:        rollNumber,
+        regNumber:         regNumber,
         sectionsManaged:   sectionsManaged,
       },
     });

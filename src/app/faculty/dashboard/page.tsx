@@ -14,7 +14,6 @@ import { AnimatedSection, containerVariants, itemVariants } from "@/components/A
 import { useAuth } from "@/context/AuthContext";
 import { useGsapHeroReveal, useGsapCardStagger, useGsapModal } from "@/hooks/useGsapAnimations";
 
-// ─── Faculty Student Detail Modal (GSAP-animated) ────────────────────────────
 function StudentDetailModal({
   student,
   onClose,
@@ -38,14 +37,14 @@ function StudentDetailModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 md:p-10"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-2 md:p-10 overflow-hidden"
       style={{ display: isVisible || isOpen ? "flex" : "none" }}
     >
       {/* GSAP Backdrop */}
       <div
         ref={backdropRef}
         style={{ opacity: 0 }}
-        className="absolute inset-0 bg-zinc-900/50 backdrop-blur-sm cursor-pointer"
+        className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md cursor-pointer"
         onClick={onClose}
       />
 
@@ -53,66 +52,90 @@ function StudentDetailModal({
       <div
         ref={panelRef}
         style={{ opacity: 0 }}
-        className="relative w-full max-w-4xl bg-bg-surface ring-4 ring-inset ring-border rounded-[1.5rem] md:rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] z-10"
+        className="relative w-full max-w-4xl bg-bg-surface border-4 border-border rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh] z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="p-6 md:p-8 border-b-3 md:border-b-4 border-border bg-bg-base flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4 md:gap-6 w-full sm:w-auto">
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-[1.5rem] bg-accent border-3 border-bg-dark flex items-center justify-center text-3xl md:text-4xl font-black text-[#09090b] shadow-[4px_4px_0_var(--color-text-primary)] shrink-0">
+        <div className="p-6 md:p-8 border-b-4 border-border bg-bg-base">
+          <div className="flex items-start md:items-center gap-4 md:gap-6">
+            <div className="w-16 h-16 md:w-24 md:h-24 rounded-[1.5rem] bg-accent border-4 border-bg-dark flex items-center justify-center text-3xl md:text-5xl font-black text-[#09090b] shadow-[4px_4px_0_var(--color-text-primary)] shrink-0">
               {student?.name?.charAt(0)}
             </div>
-            <div className="min-w-0">
-              <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-text-primary mb-1 truncate">{student?.name}</h2>
-              <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                <span className="px-2 py-0.5 md:px-3 md:py-1 bg-bg-surface border-2 border-border rounded-lg text-[10px] md:text-xs font-black text-text-secondary uppercase tracking-widest whitespace-nowrap">
-                  Section {student?.section}
-                </span>
-                <span className="text-text-secondary font-bold text-[10px] md:text-xs uppercase tracking-widest truncate">
-                  ID: {student?.id}
-                </span>
+            
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-text-primary truncate break-words">
+                  {student?.name}
+                </h2>
+                <motion.button
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={onClose}
+                  className="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-bg-surface border-3 border-border flex items-center justify-center text-text-secondary hover:text-text-primary hover:border-text-primary hover:shadow-[4px_4px_0_var(--color-text-primary)] transition-all shrink-0"
+                >
+                  <X className="w-5 h-5 md:w-7 md:h-7 stroke-[4px]" />
+                </motion.button>
+              </div>
+              
+              {/* Student Metadata Bento Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="bg-bg-surface border-2 border-border p-3 rounded-xl">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary mb-1">Section</p>
+                  <p className="text-sm font-black text-text-primary truncate">{student?.section}</p>
+                </div>
+                <div className="bg-bg-surface border-2 border-border p-3 rounded-xl">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary mb-1">Roll No.</p>
+                  <p className="text-sm font-black text-text-primary truncate">{student?.rollNumber}</p>
+                </div>
+                <div className="bg-bg-surface border-2 border-border p-3 rounded-xl">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary mb-1">Reg No.</p>
+                  <p className="text-sm font-black text-text-primary truncate">{student?.regNumber}</p>
+                </div>
               </div>
             </div>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.1, rotate: 90 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={onClose}
-            className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-bg-surface border-2 md:border-3 border-border flex items-center justify-center text-text-secondary hover:text-text-primary hover:border-text-primary hover:shadow-[4px_4px_0_var(--color-text-primary)] transition-all self-end sm:self-center"
-          >
-            <X className="w-5 h-5 md:w-6 md:h-6 stroke-[3px]" />
-          </motion.button>
         </div>
 
         {/* Modal Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-bg-surface">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-8">
-            <div className="bento-card p-5 md:p-6 border-3 border-text-primary bg-accent shadow-[4px_4px_0_var(--color-text-primary)] text-[#09090b]">
-              <p className="text-xs md:text-sm font-black uppercase tracking-widest opacity-70 mb-1 md:mb-2">Total Weightage</p>
-              <p className="text-3xl md:text-5xl font-black tracking-tighter">{student?.weightage}</p>
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-bg-surface overflow-x-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+            <div className="p-6 border-4 border-text-primary bg-accent shadow-[6px_6px_0_#000] text-[#09090b] rounded-3xl">
+              <p className="text-xs font-black uppercase tracking-widest opacity-80 mb-2">Total Weightage</p>
+              <p className="text-4xl md:text-6xl font-black tracking-tighter leading-none">{student?.weightage}</p>
             </div>
-            <div className="bento-card p-5 md:p-6 border-3 border-text-primary bg-bg-base shadow-[4px_4px_0_var(--color-text-primary)]">
-              <p className="text-xs md:text-sm font-black uppercase tracking-widest text-text-secondary mb-1 md:mb-2">Verified Certificates</p>
-              <p className="text-3xl md:text-5xl font-black tracking-tighter text-text-primary">{student?.certCount}</p>
+            <div className="p-6 border-4 border-text-primary bg-bg-base shadow-[6px_6px_0_#000] rounded-3xl">
+              <p className="text-xs font-black uppercase tracking-widest text-text-secondary mb-2">Verified Submissions</p>
+              <p className="text-4xl md:text-6xl font-black tracking-tighter text-text-primary leading-none">{student?.certCount}</p>
             </div>
           </div>
           
-          <h3 className="text-xs md:text-lg font-black uppercase tracking-widest text-text-secondary mb-4">Recent Submissions</h3>
+          <div className="flex items-center gap-4 mb-8">
+            <h3 className="text-sm md:text-lg font-black uppercase tracking-widest text-text-secondary whitespace-nowrap">Recent Ingestions</h3>
+            <div className="h-[3px] flex-1 bg-border/30 rounded-full" />
+          </div>
+          
           <div className="space-y-4">
             {student?.certs?.map((cert: any) => (
-              <div key={cert.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 border-2 md:border-3 border-border rounded-xl md:rounded-2xl hover:border-text-primary transition-colors group gap-4">
-                <div className="flex items-center gap-3 md:gap-4">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-bg-base flex items-center justify-center text-text-secondary group-hover:text-accent group-hover:bg-accent/10 transition-colors shrink-0">
-                    <FileText className="w-5 h-5 md:w-6 md:h-6" />
+              <div key={cert.id} className="flex flex-col md:flex-row md:items-center justify-between p-5 md:p-6 border-3 border-border rounded-2xl hover:border-text-primary transition-all group gap-5 bg-bg-base/40">
+                <div className="flex items-center gap-4 md:gap-6 min-w-0 flex-1">
+                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-bg-base border-3 border-border flex items-center justify-center text-text-secondary group-hover:text-accent group-hover:bg-accent/10 group-hover:border-accent transition-all shrink-0 shadow-[4px_4px_0_var(--color-border)]">
+                    <FileText className="w-6 h-6 md:w-8 md:h-8" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-black text-text-primary uppercase tracking-tight text-base md:text-lg truncate">{cert.name}</p>
-                    <p className="text-[10px] md:text-xs font-bold text-text-secondary uppercase tracking-widest truncate">{cert.issuer} • {cert.date}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-black text-text-primary uppercase tracking-tight text-lg md:text-2xl truncate group-hover:text-accent transition-colors leading-tight mb-1">
+                      {cert.name}
+                    </p>
+                    <p className="text-[10px] md:text-xs font-bold text-text-secondary uppercase tracking-widest truncate">
+                      {cert.issuer} • {cert.date}
+                    </p>
                   </div>
                 </div>
-                <button className="w-full md:w-auto text-center px-4 md:px-6 py-2.5 md:py-3 bg-bg-surface border-2 border-border text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary rounded-lg md:rounded-xl hover:bg-bg-dark hover:border-bg-dark hover:text-text-on-dark transition-all">
+                <Link 
+                  href={`/faculty/certificates/${cert.id}`}
+                  className="w-full md:w-auto text-center px-10 py-4 bg-text-primary border-3 border-text-primary text-xs font-black uppercase tracking-widest text-bg-base rounded-xl hover:bg-accent hover:text-text-primary shadow-[6px_6px_0_#000] hover:shadow-[4px_4px_0_var(--color-text-primary)] transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shrink-0"
+                >
                   View Audit
-                </button>
+                </Link>
               </div>
             ))}
           </div>
@@ -162,9 +185,11 @@ export default function FacultyDashboard() {
   certificates.forEach(c => {
     if (!studentMap.has(c.studentId)) {
       studentMap.set(c.studentId, {
-        id: c.studentId.substring(0, 8),
+        id: c.studentId, // Keep full ID for mapping
         name: c.studentName || "Unknown Student",
         section: c.section || "N/A",
+        rollNumber: (c as any).rollNumber || "N/A",
+        regNumber: (c as any).regNumber || "N/A",
         certCount: 0,
         weightage: 0,
         certs: []
@@ -360,7 +385,7 @@ export default function FacultyDashboard() {
                     </div>
                     <div>
                       <p className="font-black text-xs md:text-sm text-text-primary uppercase tracking-tight group-hover:underline decoration-2 underline-offset-4">{student.name}</p>
-                      <p className="text-[10px] md:text-xs font-bold text-text-secondary uppercase tracking-widest">{student.id} • SEC {student.section}</p>
+                      <p className="text-[10px] md:text-xs font-bold text-text-secondary uppercase tracking-widest">ROLL: {student.rollNumber} • SEC {student.section}</p>
                     </div>
                   </div>
                   <div className="text-right">
