@@ -1,10 +1,16 @@
-import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import "@testing-library/jest-dom";
+import { vi } from "vitest";
+
+// Set global mock environment variables for tests
+process.env.TELEGRAM_BOT_TOKEN = "mock_bot_token";
+process.env.TELEGRAM_CHAT_ID = "mock_chat_id";
+process.env.UPSTASH_REDIS_REST_URL = "https://mock-redis.upstash.io";
+process.env.UPSTASH_REDIS_REST_TOKEN = "mock_redis_token";
 
 // Mock matchMedia for components that use it (e.g., Framer Motion)
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
