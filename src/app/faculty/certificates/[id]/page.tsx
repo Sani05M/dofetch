@@ -135,199 +135,157 @@ export default function AuditDetailPage({ params }: { params: Promise<{ id: stri
 
   return (
     <DashboardLayout allowedRole="faculty">
-      <div className="w-full max-w-[1400px] mx-auto">
-        {/* Top Bar */}
-        <div className="flex items-center justify-between mb-4">
-          <Link href="/faculty/certificates" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-500 hover:text-bg-dark border-b-2 border-transparent hover:border-bg-dark pb-0.5 transition-all">
-            <ArrowLeft className="w-3.5 h-3.5" />
-            Back to Queue
-          </Link>
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-bold border-2 ${
-            certificate.status === 'pending' ? 'bg-yellow-100 border-yellow-500 text-yellow-700' :
-            certificate.status === 'approved' ? 'bg-green-100 border-green-500 text-green-700' :
-            'bg-red-100 border-red-500 text-red-700'
+      <div className="w-full max-w-[1600px] mx-auto px-4 lg:px-6 h-[calc(100vh-120px)] flex flex-col">
+        {/* Header - Compact */}
+        <div className="flex items-center justify-between mb-6 shrink-0">
+          <div className="flex items-center gap-6">
+            <Link 
+              href="/faculty/certificates" 
+              className="w-10 h-10 bg-white border-3 border-bg-dark rounded-xl flex items-center justify-center shadow-[4px_4px_0_#000] hover:bg-accent transition-all active:translate-x-1 active:translate-y-1 active:shadow-none"
+            >
+              <ArrowLeft className="w-5 h-5 text-bg-dark" strokeWidth={3} />
+            </Link>
+            <h1 className="text-4xl font-black uppercase tracking-tighter text-bg-dark">
+              Audit <span className="text-zinc-300">Terminal</span>
+            </h1>
+          </div>
+          <div className={`px-6 py-2 rounded-2xl border-4 border-bg-dark font-black uppercase tracking-widest text-[10px] shadow-[6px_6px_0_#000] ${
+            certificate.status === 'pending' ? 'bg-yellow-400' :
+            certificate.status === 'approved' ? 'bg-green-400' :
+            'bg-red-500 text-white'
           }`}>
-            <ShieldAlert className="w-3 h-3" />
-            <span className="uppercase">{certificate.status}</span>
+            Registry Status: {certificate.status}
           </div>
         </div>
 
-        <h1 className="text-xl md:text-3xl font-black uppercase tracking-tighter leading-none mb-5">
-          ARTIFACT <span className="text-accent">#{certificate.id.substring(0, 8)}...</span>
-        </h1>
-
-        {/* BENTO GRID: Preview left (big), 2 stacked cards right (compact) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 auto-rows-min">
+        {/* 3-BOX BENTO GRID */}
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0 pb-6">
           
-          {/* Document Preview — spans both rows on desktop */}
-          <div className="lg:col-span-7 lg:row-span-2 bg-zinc-900 flex flex-col border-4 border-bg-dark overflow-hidden rounded-2xl shadow-[6px_6px_0_#000]">
-            {isLoadingPreview ? (
-              <div className="flex flex-col items-center justify-center gap-4 py-20">
-                <div className="relative">
-                  <div className="w-14 h-14 border-4 border-accent/20 rounded-full" />
-                  <div className="absolute top-0 left-0 w-14 h-14 border-4 border-t-accent rounded-full animate-spin" />
-                </div>
-                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-accent animate-pulse">Establishing Secure Stream...</p>
+          {/* BOX 1: ARTIFACT VIEWER (LEFT) */}
+          <div className="lg:col-span-8 flex flex-col bg-white border-4 border-bg-dark rounded-[2.5rem] shadow-[12px_12px_0_#000] overflow-hidden">
+            <div className="px-6 py-4 bg-bg-dark border-b-4 border-bg-dark flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FileText className="w-5 h-5 text-accent" strokeWidth={3} />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Vault Asset // {certificate.id.substring(0, 8)}</span>
               </div>
-            ) : previewUrl ? (
-              <>
-                {/* Toolbar */}
-                <div className="px-4 py-2.5 bg-bg-dark flex items-center justify-between shrink-0">
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 bg-accent rounded-md flex items-center justify-center text-bg-dark">
-                      <FileText className="w-3 h-3" />
-                    </div>
-                    <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white">Secure Artifact</span>
-                  </div>
-                  <a 
-                    href={previewUrl} 
-                    target="_blank" 
-                    className="px-2.5 py-1 bg-zinc-800 text-[9px] font-black uppercase tracking-widest text-accent rounded-md border border-zinc-700 hover:bg-accent hover:text-bg-dark transition-all"
-                  >
-                    Open Full
-                  </a>
-                </div>
-                {/* Preview Area — fits content naturally */}
-                <div className="flex-1 bg-zinc-800 flex items-center justify-center overflow-auto p-4">
+              <a 
+                href={previewUrl || '#'} 
+                target="_blank" 
+                className="text-[9px] font-black uppercase tracking-widest text-accent hover:underline"
+              >
+                Inspect Raw File
+              </a>
+            </div>
+            <div className="flex-1 bg-zinc-50 relative flex items-center justify-center p-6">
+              <div className="absolute inset-0 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:20px_20px] opacity-[0.03]" />
+              {isLoadingPreview ? (
+                <Loader2 className="w-10 h-10 animate-spin text-bg-dark" />
+              ) : previewUrl ? (
+                <div className="w-full h-full border-4 border-bg-dark shadow-[15px_15px_0_rgba(0,0,0,0.05)] rounded-2xl overflow-hidden bg-white">
                   {certificate.telegram_file_id.toLowerCase().includes('img') || certificate.telegram_file_id.toLowerCase().includes('jpg') || certificate.telegram_file_id.toLowerCase().includes('png') ? (
-                    <img 
-                      src={previewUrl}
-                      alt="Audit Preview"
-                      className="max-w-full max-h-[65vh] object-contain rounded-xl border-2 border-zinc-700 shadow-lg"
-                    />
+                    <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
                   ) : (
-                    <iframe 
-                      src={`${previewUrl}#toolbar=0&navpanes=0`}
-                      className="w-full h-[65vh] border-none rounded-xl"
-                      title="Audit PDF Preview"
-                    />
+                    <iframe src={`${previewUrl}#toolbar=0`} className="w-full h-full border-none" title="PDF" />
                   )}
                 </div>
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center text-zinc-600 mb-4">
-                  <ShieldAlert className="w-8 h-8" />
-                </div>
-                <h2 className="text-xl font-black uppercase tracking-tighter text-zinc-600 leading-none">Artifact Not Found</h2>
-                <p className="mt-2 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600/50">Missing media link</p>
-              </div>
-            )}
-          </div>
-
-          {/* RIGHT COLUMN: Card 1 — Metadata (compact) */}
-          <div className="lg:col-span-5 bg-white border-4 border-bg-dark p-5 rounded-2xl shadow-[6px_6px_0_#000]">
-            <div className="flex items-center gap-2.5 mb-4 pb-3 border-b-2 border-bg-base">
-              <div className="w-8 h-8 bg-bg-base border-2 border-bg-dark rounded-lg flex items-center justify-center">
-                <Zap className="w-4 h-4 text-bg-dark fill-current" />
-              </div>
-              <h2 className="text-sm font-black uppercase tracking-tight">Metadata</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-zinc-50 border border-zinc-200 rounded-lg flex items-center justify-center shrink-0">
-                  <User className="w-4 h-4 text-zinc-400" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Student</div>
-                  <div className="font-black text-xs uppercase tracking-tight text-bg-dark truncate">{certificate.profiles?.username || certificate.profiles?.full_name || 'Unknown'}</div>
-                  <div className="text-[7px] font-bold text-zinc-400 uppercase">
-                    {certificate.profiles?.username && certificate.profiles?.full_name ? `${certificate.profiles.full_name} • ` : ''}
-                    {certificate.profiles?.section} • {certificate.profiles?.batch}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-zinc-50 border border-zinc-200 rounded-lg flex items-center justify-center shrink-0">
-                  <FileText className="w-4 h-4 text-zinc-400" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Certificate</div>
-                  <div className="font-black text-xs uppercase tracking-tight text-bg-dark truncate">{certificate.title}</div>
-                  <div className="text-[7px] font-bold text-zinc-400 uppercase">By {certificate.issuer || 'Unknown'}</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-zinc-50 border border-zinc-200 rounded-lg flex items-center justify-center shrink-0">
-                  <Calendar className="w-4 h-4 text-zinc-400" />
-                </div>
-                <div>
-                  <div className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Issued</div>
-                  <div className="font-black text-xs uppercase tracking-tight text-bg-dark">{certificate.issue_date || '—'}</div>
-                </div>
-              </div>
-
-              {/* Name Mismatch Alert */}
-              {certificate.extracted_text?.name_mismatch_flag && (
-                <div className="mt-2 bg-red-50 border-2 border-red-300 rounded-xl p-3 flex items-start gap-2">
-                  <ShieldAlert className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                  <div>
-                    <div className="text-[8px] font-black uppercase tracking-widest text-red-600">Identity Mismatch</div>
-                    <div className="text-[10px] font-bold text-red-700 leading-tight mt-0.5">
-                      Certificate issued to: <span className="font-black">{certificate.extracted_text?.recipient_name || 'Unknown'}</span>
-                    </div>
-                  </div>
-                </div>
+              ) : (
+                <ShieldAlert className="w-12 h-12 text-zinc-300" />
               )}
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Card 2 — AI Assessment + Actions (compact) */}
-          <div className="lg:col-span-5 bg-zinc-900 border-4 border-bg-dark p-5 rounded-2xl shadow-[6px_6px_0_#000] flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-accent" />
-                <h3 className="text-xs font-black uppercase tracking-widest text-white">AI Assessment</h3>
-              </div>
-              <div className={`px-2.5 py-0.5 rounded-md border-2 text-[10px] font-black ${
-                (certificate.score || 0) >= 35 ? 'bg-green-500/20 text-green-400 border-green-500/50' : 
-                (certificate.score || 0) >= 20 ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' : 
-                'bg-red-500/20 text-red-400 border-red-500/50'
-              }`}>
-                {certificate.score || 0}/50
-              </div>
-            </div>
+          {/* RIGHT COLUMN: SPLIT INTO BOX 2 AND BOX 3 */}
+          <div className="lg:col-span-4 flex flex-col gap-6 min-h-0">
             
-            <p className="text-[11px] text-zinc-400 font-medium leading-relaxed bg-black/40 p-3 rounded-xl border border-zinc-800 max-h-32 overflow-y-auto">
-              {certificate.extracted_text?.authenticity_reasoning || "No AI reasoning provided for this artifact."}
-            </p>
+            {/* BOX 2: AI REVIEW (TOP RIGHT) */}
+            <div className="flex-1 bg-bg-dark border-4 border-bg-dark rounded-[2.5rem] shadow-[12px_12px_0_var(--color-accent)] p-6 flex flex-col min-h-0 overflow-hidden">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Zap className="w-5 h-5 text-accent fill-current" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-white">AI Verdict</span>
+                </div>
+                <div className="text-2xl font-black italic text-accent leading-none">
+                  {certificate.score || 0}<span className="text-[10px] not-italic text-zinc-500 ml-1">/50</span>
+                </div>
+              </div>
 
-            {/* Score Override */}
-            <div className="flex items-center gap-3">
-              <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 whitespace-nowrap">Override</label>
-              <input 
-                type="number" 
-                max={50} 
-                min={0}
-                value={overrideScore}
-                onChange={(e) => setOverrideScore(Math.min(50, Math.max(0, parseInt(e.target.value) || 0)))}
-                className="flex-1 bg-black/40 border-2 border-zinc-700 rounded-lg px-3 py-2 text-white font-bold text-xs focus:border-accent outline-none transition-colors"
-              />
-              <span className="text-zinc-600 text-[9px] font-bold">/50</span>
+              <div className="flex-1 bg-zinc-900/50 border-2 border-white/10 rounded-2xl p-4 mb-4 overflow-y-auto custom-scrollbar">
+                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500 block mb-2">Cognitive Analysis</span>
+                <p className="text-[10px] text-zinc-300 font-bold leading-relaxed italic">
+                  "{certificate.extracted_text?.authenticity_reasoning || "Initiating scan..."}"
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-2 border-2 border-white/5">
+                  <span className="text-[9px] font-black uppercase text-zinc-500">Manual Bias</span>
+                  <input 
+                    type="number" 
+                    value={overrideScore}
+                    onChange={(e) => setOverrideScore(parseInt(e.target.value) || 0)}
+                    className="w-12 bg-transparent text-white font-black text-right text-xs outline-none"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    onClick={() => handleAudit("approved")}
+                    className="bg-[#70e2a4] border-2 border-bg-dark rounded-xl py-3 text-[9px] font-black uppercase tracking-widest shadow-[4px_4px_0_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                  >
+                    Accept
+                  </button>
+                  <button 
+                    onClick={() => handleAudit("rejected")}
+                    className="bg-white border-2 border-bg-dark rounded-xl py-3 text-[9px] font-black uppercase tracking-widest shadow-[4px_4px_0_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="grid grid-cols-2 gap-3 mt-1">
-              <button 
-                onClick={() => handleAudit("approved")}
-                disabled={isProcessing}
-                className="bg-[#70e2a4] hover:bg-[#5cd091] text-bg-dark font-black uppercase tracking-widest text-[10px] py-3 rounded-xl border-3 border-bg-dark shadow-[4px_4px_0_#000] flex items-center justify-center gap-2 transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50"
-              >
-                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                Verify
-              </button>
-              
-              <button 
-                onClick={() => handleAudit("rejected")}
-                disabled={isProcessing}
-                className="bg-white hover:bg-zinc-50 text-red-500 font-black uppercase tracking-widest text-[10px] py-3 rounded-xl border-3 border-bg-dark shadow-[4px_4px_0_#000] flex items-center justify-center gap-2 transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50"
-              >
-                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
-                Reject
-              </button>
+            {/* BOX 3: STUDENT DETAILS (BOTTOM RIGHT) */}
+            <div className="flex-1 bg-white border-4 border-bg-dark rounded-[2.5rem] shadow-[12px_12px_0_#000] p-6 flex flex-col min-h-0 overflow-hidden">
+              <div className="flex items-center justify-between mb-4 pb-2 border-b-2 border-zinc-100">
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4 text-bg-dark" strokeWidth={3} />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-bg-dark">Registry Vault</span>
+                </div>
+                <button onClick={handleRefresh} className={isRefreshing ? 'animate-spin' : ''}>
+                  <RefreshCcw className="w-3 h-3 text-zinc-400" />
+                </button>
+              </div>
+
+              <div className="flex-1 space-y-4 overflow-y-auto custom-scrollbar">
+                <div className="flex items-center gap-4 p-3 bg-zinc-50 border-2 border-bg-dark rounded-2xl">
+                  <div className="w-10 h-10 bg-white border-2 border-bg-dark rounded-lg flex items-center justify-center">
+                    <User className="w-5 h-5 text-bg-dark" strokeWidth={3} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-black text-bg-dark uppercase truncate">{certificate.profiles?.username}</div>
+                    <div className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">{certificate.profiles?.full_name}</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2">
+                  <div className="p-3 border-2 border-bg-dark rounded-xl flex justify-between items-center">
+                    <span className="text-[8px] font-black uppercase text-zinc-400">Section</span>
+                    <span className="text-[9px] font-black text-bg-dark uppercase">{certificate.profiles?.section}</span>
+                  </div>
+                  <div className="p-3 border-2 border-bg-dark rounded-xl flex justify-between items-center bg-accent/5">
+                    <span className="text-[8px] font-black uppercase text-zinc-400">Issuer</span>
+                    <span className="text-[9px] font-black text-bg-dark uppercase truncate ml-4">{certificate.issuer}</span>
+                  </div>
+                </div>
+
+                {certificate.extracted_text?.name_mismatch_flag && (
+                  <div className="bg-red-500 border-2 border-bg-dark rounded-xl p-3 flex gap-2">
+                    <ShieldAlert className="w-4 h-4 text-white shrink-0" strokeWidth={3} />
+                    <p className="text-[8px] font-black text-white uppercase leading-tight">
+                      Mismatch: Issued to {certificate.extracted_text?.recipient_name}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

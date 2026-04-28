@@ -366,54 +366,7 @@ export default function StudentUpload() {
         )}
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Artifact Title</label>
-              <input 
-                type="text" 
-                required
-                className="input-field"
-                placeholder="e.g. AWS Certified Developer"
-                value={formData.title}
-                onChange={(e) => setFormData({...formData, title: e.target.value})}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Issuing Authority</label>
-              <input 
-                type="text" 
-                required
-                className="input-field"
-                placeholder="e.g. Amazon Web Services"
-                value={formData.issuer}
-                onChange={(e) => setFormData({...formData, issuer: e.target.value})}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Artifact Type</label>
-                <CustomSelect 
-                  options={[
-                    { label: 'Academic Artifact', value: 'Academic Artifact' },
-                    { label: 'Professional Cert', value: 'Professional Cert' },
-                    { label: 'Workshop Token', value: 'Workshop Token' },
-                  ]}
-                  value={formData.type}
-                  onChange={(val) => setFormData({...formData, type: val})}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Issue Date</label>
-                <CustomDatePicker 
-                  value={formData.issueDate}
-                  onChange={(date) => setFormData({...formData, issueDate: date})}
-                />
-              </div>
-            </div>
-          </div>
-
+          {/* LEFT COLUMN: Payload */}
           <div className="space-y-6">
             <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Secure Payload (PDF/IMG)</label>
             <div 
@@ -422,9 +375,10 @@ export default function StudentUpload() {
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               className={`
-                h-64 md:h-full min-h-[300px] border-4 border-dashed rounded-3xl flex flex-col items-center justify-center cursor-pointer transition-all gap-4
+                h-64 md:h-full min-h-[400px] border-4 border-dashed rounded-[2rem] flex flex-col items-center justify-center cursor-pointer transition-all gap-4
                 ${isDragging ? "border-accent bg-accent/5 scale-[0.98]" : "border-border bg-bg-surface hover:border-text-secondary"}
                 ${selectedFile ? "border-green-500 bg-green-500/5" : ""}
+                shadow-[4px_4px_0_#000]
               `}
             >
               <input 
@@ -452,6 +406,7 @@ export default function StudentUpload() {
                   <p className="font-black text-sm uppercase tracking-widest text-bg-dark">Scanning Artifact...</p>
                   <p className="text-[10px] text-text-secondary font-bold mt-1 uppercase tracking-widest">Extracting Metadata via AI</p>
                   <button 
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       setIsExtracting(false);
@@ -473,6 +428,7 @@ export default function StudentUpload() {
                     </p>
                     <p className="text-[10px] font-bold text-green-600 uppercase">Payload Ready for Sync</p>
                     <button 
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         resetForm();
@@ -495,6 +451,57 @@ export default function StudentUpload() {
                 </>
               )}
             </div>
+          </div>
+
+          {/* RIGHT COLUMN: Details + Actions */}
+          <div className="flex flex-col gap-6">
+            <div className="bg-bg-surface border-2 border-border rounded-[2rem] p-6 md:p-8 shadow-[4px_4px_0_#000] space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Artifact Title</label>
+                <input 
+                  type="text" 
+                  required
+                  className="input-field"
+                  placeholder="e.g. AWS Certified Developer"
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Issuing Authority</label>
+                <input 
+                  type="text" 
+                  required
+                  className="input-field"
+                  placeholder="e.g. Amazon Web Services"
+                  value={formData.issuer}
+                  onChange={(e) => setFormData({...formData, issuer: e.target.value})}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Artifact Type</label>
+                  <CustomSelect 
+                    options={[
+                      { label: 'Academic Artifact', value: 'Academic Artifact' },
+                      { label: 'Professional Cert', value: 'Professional Cert' },
+                      { label: 'Workshop Token', value: 'Workshop Token' },
+                    ]}
+                    value={formData.type}
+                    onChange={(val) => setFormData({...formData, type: val})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Issue Date</label>
+                  <CustomDatePicker 
+                    value={formData.issueDate}
+                    onChange={(date) => setFormData({...formData, issueDate: date})}
+                  />
+                </div>
+              </div>
+            </div>
 
             {extractedAiData.score > 0 && extractedAiData.score < 25 && (
               <div className="p-4 bg-orange-500/10 border-2 border-orange-500/50 rounded-2xl flex gap-4 items-start">
@@ -512,7 +519,7 @@ export default function StudentUpload() {
               type="submit"
               disabled={(!selectedFile && !stagedPath) || isUploading || isQuotaReached}
               className={`
-                w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-sm flex items-center justify-center gap-3 transition-all
+                w-full py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs md:text-sm flex items-center justify-center gap-3 transition-all
                 ${((!selectedFile && !stagedPath) || isUploading || isQuotaReached)
                   ? "bg-bg-surface border-4 border-border text-text-secondary cursor-not-allowed" 
                   : "bg-bg-dark text-text-on-dark border-4 border-accent shadow-[6px_6px_0_var(--color-accent)] hover:-translate-y-1 hover:shadow-[8px_8px_0_var(--color-accent)] active:translate-x-1 active:translate-y-1 active:shadow-none"
