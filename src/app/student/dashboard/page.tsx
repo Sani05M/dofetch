@@ -8,8 +8,9 @@ import { useCertificates } from "@/hooks/useCertificates";
 import { CertificateCard, Certificate } from "@/components/CertificateCard";
 import { CertificatePreview } from "@/components/CertificatePreview";
 import { AnimatedSection, containerVariants, itemVariants } from "@/components/AnimatedSection";
-import { LayoutGrid, CheckCircle2, Clock, Plus, Zap, ArrowUpRight, RefreshCcw, Activity } from "lucide-react";
+import { LayoutGrid, CheckCircle2, Clock, Plus, Zap, ArrowUpRight, RefreshCcw, Activity, Flame, User as UserIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useProfile } from "@/hooks/useProfile";
 
 
 
@@ -18,6 +19,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function StudentDashboard() {
   const { certificates, refresh } = useCertificates();
   const { user } = useAuth();
+  const { profile, refresh: refreshProfile } = useProfile();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [quota, setQuota] = useState({ used: 0, limit: 10 });
   const [loadingQuota, setLoadingQuota] = useState(true);
@@ -38,7 +40,7 @@ export default function StudentDashboard() {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await Promise.all([refresh(), fetchQuota()]);
+    await Promise.all([refresh(), fetchQuota(), refreshProfile()]);
     setTimeout(() => setIsRefreshing(false), 1000);
   };
 
@@ -76,12 +78,28 @@ export default function StudentDashboard() {
               <Zap className="w-3 h-3 text-accent fill-current" />
               <span>Institutional Mesh Active</span>
             </div>
-            <h1 className="text-3xl xs:text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none text-text-primary">
+            <h1 className="text-3xl xs:text-4xl md:text-5xl font-black uppercase tracking-tighter leading-tight text-text-primary">
               WELCOME BACK,<br/>
               <span className="text-accent">{user?.name || "STUDENT"}</span>
             </h1>
           </div>
           <div className="flex items-center gap-3">
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ x: 3, y: 3 }}
+              className="hidden md:block"
+            >
+              <Link 
+                href={profile?.portfolio_slug ? `/portfolio/${profile.portfolio_slug}` : '/student/profile'} 
+                className={cn(
+                  "flex items-center gap-2 px-6 py-3 md:py-4 bg-zinc-900 border-3 border-bg-dark rounded-2xl font-black uppercase tracking-widest text-[10px] md:text-xs text-white hover:shadow-[4px_4px_0_#000] transition-all",
+                  !profile?.portfolio_slug && "opacity-80"
+                )}
+              >
+                <UserIcon className="w-4 h-4 text-accent" />
+                {profile?.portfolio_slug ? "Live Portfolio" : "Setup Slug"}
+              </Link>
+            </motion.div>
             <button
               onClick={handleRefresh}
               title="Live Sync (every 5s)"
@@ -117,13 +135,33 @@ export default function StudentDashboard() {
       >
         {/* Daily Quota Card */}
         <motion.div variants={itemVariants} whileHover={{ x: -1, y: -1 }} whileTap={{ x: 3, y: 3 }}>
+          <div className={cn(
+            "bento-3d flex flex-col justify-between h-40 md:h-48 transition-all active:shadow-none p-6 md:p-8 rounded-2xl md:rounded-3xl bg-bg-surface border-border shadow-[4px_4px_0_#000]"
+          )}>
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-500/10 rounded-xl flex items-center justify-center text-orange-500 shadow-sm border-2 border-orange-500/20">
+                <Flame className="w-5 h-5 md:w-6 md:h-6 fill-current" />
+              </div>
+              <Activity className="w-5 h-5 md:w-6 md:h-6 opacity-30" />
+            </div>
+            <div>
+              <span className="text-4xl md:text-6xl font-black tracking-tighter leading-none">
+                {(profile?.streak_data as any)?.current || 0}
+              </span>
+              <p className="text-[10px] md:text-sm font-black uppercase tracking-widest mt-1 md:mt-2 opacity-80">Day Streak</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Quota Stats Card */}
+        <motion.div variants={itemVariants} whileHover={{ x: -1, y: -1 }} whileTap={{ x: 3, y: 3 }}>
           <Link href="/student/upload" className={cn(
             "bento-3d flex flex-col justify-between h-40 md:h-48 transition-all active:shadow-none p-6 md:p-8 rounded-2xl md:rounded-3xl",
             loadingQuota || quota.used < quota.limit ? "bg-bg-surface border-border shadow-[4px_4px_0_#000]" : "bg-red-500 border-bg-dark shadow-[4px_4px_0_#000] text-white"
           )}>
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 md:w-12 md:h-12 bg-bg-surface rounded-xl flex items-center justify-center text-text-primary shadow-sm border-2 border-border">
-                <Activity className="w-5 h-5 md:w-6 md:h-6" />
+                <Plus className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <ArrowUpRight className="w-5 h-5 md:w-6 md:h-6 opacity-30 group-hover:opacity-100 transition-opacity" />
             </div>
@@ -131,7 +169,7 @@ export default function StudentDashboard() {
               <span className="text-4xl md:text-6xl font-black tracking-tighter leading-none">
                 {loadingQuota ? "-" : quota.used}
               </span>
-              <span className="text-xl md:text-2xl font-black text-white/50">/{loadingQuota ? "-" : quota.limit}</span>
+              <span className="text-xl md:text-2xl font-black opacity-30">/{loadingQuota ? "-" : quota.limit}</span>
               <p className="text-[10px] md:text-sm font-black uppercase tracking-widest mt-1 md:mt-2 opacity-80">Daily Quota</p>
             </div>
           </Link>
@@ -170,6 +208,32 @@ export default function StudentDashboard() {
           );
         })}
       </motion.div>
+
+      {/* Badges Showcase */}
+      {profile?.badges && profile.badges.length > 0 && (
+        <AnimatedSection delay={0.2}>
+          <div className="mb-16">
+            <div className="flex items-center gap-4 mb-8">
+              <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-text-primary">EARNED BADGES</h2>
+              <div className="h-[2px] flex-1 bg-border/30" />
+            </div>
+            <div className="flex flex-wrap gap-4">
+              {profile.badges.map((badge: string, idx: number) => (
+                <motion.div 
+                  key={idx}
+                  whileHover={{ y: -5, scale: 1.05 }}
+                  className="px-6 py-4 bg-bg-surface border-3 border-bg-dark rounded-2xl flex items-center gap-4 shadow-[4px_4px_0_#000]"
+                >
+                  <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center border-2 border-accent/20">
+                    <Zap className="w-5 h-5 text-accent fill-current" />
+                  </div>
+                  <span className="font-black uppercase tracking-tighter text-sm">{badge.replace('_', ' ')}</span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </AnimatedSection>
+      )}
 
       {/* Recent Activity */}
       <AnimatedSection delay={0.4}>

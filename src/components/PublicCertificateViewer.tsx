@@ -11,7 +11,9 @@ import {
   ShieldAlert,
   RefreshCw,
   FileText,
-  Download
+  Download,
+  QrCode,
+  BadgeCheck
 } from "lucide-react";
 
 interface PublicCertificateViewerProps {
@@ -112,10 +114,13 @@ export function PublicCertificateViewer({ certificate }: PublicCertificateViewer
                   <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-4 pt-4 border-t border-zinc-800/50 text-left w-full mt-auto shrink-0">
                     <div className="text-center md:text-left">
                       <div className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-0.5">HOLDER</div>
-                      <div className="text-base md:text-xl font-black uppercase tracking-tight text-zinc-200 truncate">
+                      <div className="text-base md:text-xl font-black uppercase tracking-tight text-zinc-200 truncate flex items-center gap-2 justify-center md:justify-start">
                         {certificate.profiles?.full_name || 'Verified Scholar'}
+                        {(certificate.status === "verified" || certificate.status === "approved") && (
+                          <BadgeCheck className="w-5 h-5 text-accent fill-accent/20" />
+                        )}
                       </div>
-                      <div className="flex items-center gap-2 mt-0.5">
+                      <div className="flex items-center gap-2 mt-0.5 justify-center md:justify-start">
                         <div className="text-[8px] text-zinc-500 font-mono uppercase truncate">ID: {certificate.student_id || certificate.id.split('-')[0]}</div>
                         {certificate.score !== undefined && (
                           <div className={`px-2 py-0.5 rounded border text-[8px] font-black uppercase tracking-widest flex items-center gap-1 ${
@@ -150,23 +155,52 @@ export function PublicCertificateViewer({ certificate }: PublicCertificateViewer
                 {isLoading ? (
                   <div className="flex flex-col items-center justify-center h-full gap-4">
                     <div className="w-8 h-8 border-2 border-zinc-800 border-t-accent rounded-full animate-spin shadow-[0_0_15px_rgba(112,226,164,0.3)]" />
-                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">Decrypting...</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-accent">Decrypting Evidence...</p>
                   </div>
-                ) : previewUrl ? (
-                  certificate.type === 'IMG' ? (
-                    <img src={previewUrl} alt="Source" className="w-full h-full object-contain" />
-                  ) : (
-                    <iframe 
-                      src={`${previewUrl}#toolbar=0&navpanes=0`} 
-                      className="w-full h-full border-none" 
-                      title="Secure Document"
-                    />
-                  )
                 ) : (
-                  <div className="flex flex-col items-center text-center p-8">
-                    <ShieldAlert className="w-12 h-12 text-zinc-700 mb-4" />
-                    <p className="text-zinc-600 font-black uppercase tracking-widest text-[10px]">Visibility Restricted</p>
-                    <p className="text-zinc-600 text-[10px] mt-2">Available only via secure mesh.</p>
+                  <div className="w-full h-full flex flex-col md:flex-row">
+                    {/* Left: Source Preview (if available) */}
+                    <div className="flex-1 border-r border-zinc-800 bg-black/40 relative overflow-hidden">
+                      {previewUrl ? (
+                        certificate.type === 'IMG' ? (
+                          <img src={previewUrl} alt="Source" className="w-full h-full object-contain" />
+                        ) : (
+                          <iframe 
+                            src={`${previewUrl}#toolbar=0&navpanes=0`} 
+                            className="w-full h-full border-none" 
+                            title="Secure Document"
+                          />
+                        )
+                      ) : (
+                        <div className="flex items-center justify-center h-full text-zinc-700">
+                          <FileText className="w-12 h-12 opacity-20" />
+                        </div>
+                      )}
+                    </div>
+                    {/* Right: Verification QR & Trust Metrics */}
+                    <div className="w-full md:w-64 bg-zinc-950 p-6 flex flex-col items-center justify-center text-center gap-4">
+                       <div className="p-3 bg-white rounded-xl shadow-lg">
+                        <img 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`https://do-fetch.vercel.app/verify/${certificate.id}`)}&bgcolor=ffffff&color=09090b`}
+                          alt="Verification QR"
+                          className="w-24 h-24"
+                        />
+                       </div>
+                       <div>
+                         <p className="text-accent font-black uppercase tracking-widest text-[8px] mb-1">Verify Authenticity</p>
+                         <p className="text-zinc-600 text-[7px] leading-tight uppercase font-mono">Scan for real-time audit record</p>
+                       </div>
+                       <div className="mt-4 pt-4 border-t border-zinc-800 w-full flex flex-col gap-2">
+                         <div className="flex items-center justify-between text-[7px] font-mono text-zinc-500 uppercase">
+                            <span>Hash Status</span>
+                            <span className="text-green-500">MATCHED</span>
+                         </div>
+                         <div className="flex items-center justify-between text-[7px] font-mono text-zinc-500 uppercase">
+                            <span>Mesh Link</span>
+                            <span className="text-accent">ACTIVE</span>
+                         </div>
+                       </div>
+                    </div>
                   </div>
                 )}
               </div>

@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { extractCertificateData } from "@/lib/gemini";
 import { supabase } from "@/lib/supabase";
 import { rateLimit } from "@/lib/rateLimit";
+import { updateStudentStreak } from "@/lib/gamification";
 import crypto from "crypto";
 
 // Allow up to 60 seconds for Gemini Vision to process the certificate
@@ -128,6 +129,9 @@ export async function POST(req: Request) {
       finalScore = Math.max(0, finalScore - 5);
       finalReasoning = `⚠️ NO RECIPIENT NAME: Could not identify the recipient on this certificate. Score penalized by -5. ` + finalReasoning;
     }
+
+    // 6. Update Gamification (Streak)
+    await updateStudentStreak(userId);
 
     return NextResponse.json({ 
       success: true, 

@@ -3,24 +3,40 @@
 import React, { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
-import { UserCircle, Save, Mail, Briefcase, BadgeCheck, BookOpen } from "lucide-react";
+import { useProfile } from "@/hooks/useProfile";
+import { UserCircle, Save, Mail, Briefcase, BadgeCheck, BookOpen, Globe, Link as LinkIcon } from "lucide-react";
 
 export default function StudentProfilePage() {
   const { user } = useAuth();
-  
-  // Local state for editing profile
-  const [name, setName] = useState(user?.name || "Student Name");
-  const [email, setEmail] = useState(user?.email || "student@adamas.edu");
+  const { profile, updateProfile } = useProfile();
+  // Portfolio state
+  const [portfolioSlug, setPortfolioSlug] = useState("");
+  const [bio, setBio] = useState("");
+  const [isPublic, setIsPublic] = useState(false);
   
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
+  React.useEffect(() => {
+    if (profile) {
+      setPortfolioSlug(profile.portfolio_slug || "");
+      setBio(profile.bio || "");
+      setIsPublic(profile.is_public || false);
+    }
+  }, [profile]);
+
+  const handleSave = async () => {
     setIsSaving(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false);
-      // Ideally, update the global auth context user object here
-    }, 1000);
+    const { error } = await updateProfile({
+      portfolio_slug: portfolioSlug.trim() || null,
+      bio: bio.trim() || null,
+      is_public: isPublic
+    });
+    setIsSaving(false);
+    if (!error) {
+      alert("Profile and Portfolio updated successfully!");
+    } else {
+      alert("Error updating profile. The slug might already be taken.");
+    }
   };
 
   return (
@@ -64,44 +80,63 @@ export default function StudentProfilePage() {
           </div>
         </div>
 
+
         <div className="bento-card">
           <div className="flex items-center gap-2 mb-6 border-b border-border pb-4">
-            <UserCircle className="w-5 h-5 text-accent" />
-            <h2 className="text-xl font-black uppercase tracking-tight text-text-primary">Personal Details</h2>
+            <Globe className="w-5 h-5 text-accent" />
+            <h2 className="text-xl font-black uppercase tracking-tight text-text-primary">Public Portfolio</h2>
           </div>
 
           <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Full Legal Name</label>
-              <input 
-                type="text" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="input-field"
-                required
-              />
+              <label className="text-xs font-black uppercase tracking-widest text-text-secondary ml-2 flex items-center gap-2">
+                <LinkIcon className="w-3 h-3"/> Portfolio Slug
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-mono text-text-secondary bg-bg-dark px-3 py-3 rounded-xl border-2 border-border hidden sm:block">
+                  do-fetch.vercel.app/portfolio/
+                </span>
+                <input 
+                  type="text" 
+                  value={portfolioSlug}
+                  onChange={(e) => setPortfolioSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                  className="input-field flex-1"
+                  placeholder="your-name"
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-text-secondary ml-2 flex items-center gap-2">
-                <Mail className="w-3 h-3"/> University Email
-              </label>
-              <input 
-                type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input-field"
-                required
+              <label className="text-xs font-black uppercase tracking-widest text-text-secondary ml-2">Professional Bio</label>
+              <textarea 
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                className="input-field min-h-[100px] resize-y"
+                placeholder="Brief summary of your academic focus and goals..."
+                maxLength={300}
               />
             </div>
 
-            <div className="flex justify-end pt-4">
+            <div className="flex items-center gap-3 ml-2">
+              <input 
+                type="checkbox" 
+                id="isPublic"
+                checked={isPublic}
+                onChange={(e) => setIsPublic(e.target.checked)}
+                className="w-5 h-5 accent-accent"
+              />
+              <label htmlFor="isPublic" className="text-sm font-bold text-text-primary cursor-pointer">
+                Make Portfolio Public
+              </label>
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-border mt-8">
               <button 
                 type="submit" 
                 disabled={isSaving}
                 className="btn-primary"
               >
-                {isSaving ? "Saving..." : "Save Changes"}
+                {isSaving ? "Saving..." : "Save All Changes"}
                 <Save className="w-4 h-4" />
               </button>
             </div>
