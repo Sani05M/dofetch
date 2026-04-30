@@ -28,7 +28,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { isLoaded, isSignedIn, user: clerkUser } = useUser();
   const { signOut } = useClerk();
   const router = useRouter();
@@ -39,9 +41,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isLoaded && isSignedIn && clerkUser) {
       const email = clerkUser.primaryEmailAddress?.emailAddress || "";
       const metadata = clerkUser.publicMetadata as any;
-      const role = metadata.role || (email.endsWith("@stu.adamasuniversity.ac.in") ? "student" : "faculty");
+      const role =
+        metadata.role ||
+        (email.endsWith("@stu.adamasuniversity.ac.in") ? "student" : "faculty");
       const isStudent = role === "student";
-      
+
       setUser({
         id: clerkUser.id,
         name: clerkUser.fullName || (isStudent ? "Student" : "Authority"),
@@ -58,7 +62,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     syncUser();
-  }, [isLoaded, isSignedIn, clerkUser]);
+
+    // Background sync to Supabase profile
+    const performBackgroundSync = async () => {
+      if (isLoaded && isSignedIn && clerkUser) {
+        const email = clerkUser.primaryEmailAddress?.emailAddress || "";
+        const metadata = clerkUser.publicMetadata as any;
+        const role =
+          metadata.role ||
+          (email.endsWith("@stu.adamasuniversity.ac.in")
+            ? "student"
+            : "faculty");
+
+        try {
+          // Use the onboarding API pattern but as a silent sync
+          await fetch("/api/onboarding", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              role: role,
+              fullName: clerkUser.fullName,
+              email: email,
+              department: metadata.department,
+              batch: metadata.batch,
+              section: metadata.section,
+              rollNumber: metadata.rollNumber,
+              regNumber: metadata.regNumber,
+              sectionsManaged: metadata.sectionsManaged,
+              isSync: true, // Flag to skip metadata update loop if needed
+            }),
+          });
+        } catch (err) {
+          console.warn("Background profile sync failed:", err);
+        }
+      }
+    };
+
+    if (isSignedIn) performBackgroundSync();
+  }, [isLoaded, isSignedIn, clerkUser?.id]);
 
   const refresh = async () => {
     if (clerkUser) {
@@ -81,7 +122,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isAuthLoading = !isLoaded || (isLoaded && isSignedIn && user === null);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, refresh, isLoading: isAuthLoading }}>
+    <AuthContext.Provider
+      value={{ user, login, logout, refresh, isLoading: isAuthLoading }}
+    >
       {children}
     </AuthContext.Provider>
   );
