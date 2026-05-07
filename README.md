@@ -29,9 +29,9 @@ Infinite Academic Artifact Storage • AI Verification • Institutional Registr
 
 <td align="center">
 <a href="https://github.com/Sani05M">
-<img src="https://cloud-snapp.vercel.app/api/cdn/4a6aad36005aec90dbd9b18976c63664.jpg?fmt=avif" width="80px;" alt="Sani"/>
+<img src="https://cloud-snapp.vercel.app/api/cdn/4a6aad36005aec90dbd9b18976c63664.jpg?fmt=avif" width="80px;" alt="Sanay"/>
 <br />
-<sub><b>Sani</b></sub>
+<sub><b>Sayan</b></sub>
 </a>
 </td>
 
