@@ -1,7 +1,7 @@
-# DO-FETCH
+<h1 align="center">DOFETCH 📖</h1>
 
 <p align="center">
-  <img src="https://cloud-snapp.vercel.app/api/cdn/chatgpt-image-may-7-2026-09_08_25-pm.png?fmt=avif" alt="DO-FETCH Banner"/>
+  <img src="https://cloud-snapp.vercel.app/api/cdn/dofetchh.png?fmt=avif" alt="DOFETCH Banner" width="100%" />
 </p>
 
 <h3 align="center">
@@ -9,86 +9,172 @@ AI-Powered Institutional Registry & Credential Verification Platform
 </h3>
 
 <p align="center">
-Infinite Academic Artifact Storage • AI Fraud Detection • Institutional Verification
+Infinite Academic Artifact Storage • AI Verification • Institutional Registry • Realtime Infrastructure
+</p>
+
+<p align="center">
+  <a href="#overview">Overview</a> •
+  <a href="#features">Features</a> •
+  <a href="#architecture">Architecture</a> •
+  <a href="#technology-stack">Tech Stack</a> 
+  <!-- <a href="#contributors">Contributors</a> -->
+</p>
+
+---
+
+<h2 align="center">Core Contributors</h2>
+
+<table align="center">
+<tr>
+
+<td align="center">
+<a href="https://github.com/Sani05M">
+<img src="https://cloud-snapp.vercel.app/api/cdn/4a6aad36005aec90dbd9b18976c63664.jpg?fmt=avif" width="80px;" alt="Sani"/>
+<br />
+<sub><b>Sani</b></sub>
+</a>
+</td>
+
+<td align="center">
+<a href="https://github.com/AbhishekS04">
+<img src="https://github.com/AbhishekS04.png" width="80px;" alt="Abhishek"/>
+<br />
+<sub><b>Abhishek</b></sub>
+</a>
+</td>
+
+<td align="center">
+<a href="https://github.com/shyamsundarbarman05">
+<img src="https://cloud-snapp.vercel.app/api/cdn/randompinnn.jpg?fmt=avif" width="80px;" alt="Shyamsundar"/>
+<br />
+<sub><b>Shyamsundar</b></sub>
+</a>
+</td>
+
+<td align="center">
+<a href="https://github.com/lizaghosh722161-cmd">
+<img src="https://cloud-snapp.vercel.app/api/cdn/6f0fd1153eca1dce64d94c06e9199593.jpg?fmt=avif" width="80px;" alt="Liza"/>
+<br />
+<sub><b>Liza Ghosh</b></sub>
+</a>
+</td>
+
+</tr>
+</table>
+
+---
+
+<p align="center">
+  
+<img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" />
+<img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
+<img src="https://img.shields.io/badge/TailwindCSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
+<img src="https://img.shields.io/badge/Supabase-000000?style=for-the-badge&logo=supabase" />
+<img src="https://img.shields.io/badge/Gemini-AI-8E75FF?style=for-the-badge" />
+<img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" />
+
 </p>
 
 ---
 
 # Overview
 
-DO-FETCH is a modern institutional registry platform designed to manage, verify, preserve, and analyze academic artifacts using AI-powered forensic verification and scalable distributed infrastructure.
+DOFETCH is a next-generation institutional credential registry and AI-powered academic verification ecosystem engineered to modernize how educational institutions preserve, verify, manage, and analyze academic credentials.
 
 The platform combines:
-- AI-based credential investigation
-- institutional verification workflows
-- real-time synchronization systems
-- distributed cloud architecture
-- intelligent academic portfolio generation
-- secure role-based access control
+- AI-assisted forensic verification
+- distributed cloud-native infrastructure
+- realtime synchronization systems
+- institutional authentication
+- scalable academic preservation
+- intelligent academic indexing
+- dynamic portfolio generation
 
-DO-FETCH was built to explore how modern AI systems and unconventional infrastructure models can redefine academic verification ecosystems.
+DOFETCH explores how modern AI systems and distributed infrastructure can redefine institutional verification ecosystems.
 
 ---
 
 # Core Vision
 
-> Build a scalable, intelligent, and low-cost institutional verification ecosystem capable of preserving and validating academic credentials using AI-driven forensic analysis.
+> Build a scalable, intelligent, and secure institutional verification ecosystem capable of preserving and validating academic credentials using AI-powered forensic analysis.
 
 ---
 
-# Key Features
+# Features
 
-## AI-Powered Verification
-Advanced multimodal AI pipelines analyze uploaded credentials for:
+## AI-Powered Credential Verification
+
+The platform integrates multimodal AI verification pipelines capable of:
 - OCR extraction
-- authenticity validation
-- formatting inconsistencies
-- issuer analysis
+- authenticity analysis
 - forgery detection
+- metadata reasoning
+- issuer validation
 - verification scoring
 
 ---
 
-## Institutional Authentication
-The system supports:
-- domain-restricted access
-- role-based routing
-- faculty & student separation
-- protected institutional workflows
+## Institutional Registry Infrastructure
 
----
+The registry engine centralizes:
+- students
+- faculty
+- departments
+- sections
+- credentials
+- verification metadata
+- institutional relationships
 
-## Infinite Academic Artifact Storage
-DO-FETCH introduces a unique experimental storage architecture powered by Telegram-based binary artifact persistence.
-
-This enables:
-- low-cost infrastructure
-- scalable academic preservation
-- lightweight deployment
-- simplified storage workflows
-
----
-
-## Realtime Synchronization
-Redis-powered synchronization states provide:
-- live upload tracking
-- AI workflow coordination
-- async processing management
-- realtime frontend updates
+into a unified academic ecosystem.
 
 ---
 
 ## Dynamic Academic Portfolios
-Students can create interactive academic portfolios containing:
+
+Students can maintain interactive academic portfolios containing:
 - verified certificates
 - authenticity scores
+- academic achievements
+- verification status
 - institutional metadata
-- achievement archives
-- public verification layers
 
 ---
 
-# System Architecture
+## Realtime Synchronization
+
+The platform uses distributed synchronization systems for:
+- upload tracking
+- AI workflow coordination
+- asynchronous verification
+- realtime frontend updates
+- live infrastructure polling
+
+---
+
+## Secure Institutional Authentication
+
+The authentication infrastructure supports:
+- domain-restricted access
+- role-based routing
+- protected institutional workflows
+- layered authorization systems
+- faculty & student separation
+
+---
+
+## Distributed Artifact Storage
+
+DOFETCH introduces an experimental storage architecture powered by Telegram-based binary persistence.
+
+This enables:
+- scalable storage systems
+- low-cost infrastructure
+- lightweight deployments
+- academic archive preservation
+
+---
+
+# Architecture
 
 ## High-Level Architecture
 
@@ -100,10 +186,11 @@ Next.js Fullstack Platform
        │
        ├── Authentication Layer
        ├── API Gateway
-       ├── AI Processing Engine
-       ├── Verification System
-       ├── Portfolio Engine
-       └── Realtime Sync Layer
+       ├── AI Verification Engine
+       ├── Registry Engine
+       ├── Portfolio System
+       ├── Synchronization Layer
+       └── Verification Infrastructure
               │
               ▼
 External Infrastructure Services
@@ -119,39 +206,40 @@ External Infrastructure Services
 
 # Architecture Philosophy
 
-The platform follows a distributed service-oriented architecture where every external service is assigned a highly specific responsibility.
+DOFETCH follows a distributed service-oriented architecture where every infrastructure layer handles a highly specialized responsibility.
 
 | Service | Responsibility |
 |---|---|
 | Clerk | Authentication & Identity |
-| Supabase | Relational Database |
-| Telegram | Binary Artifact Storage |
+| Supabase | Database Infrastructure |
+| Telegram | Artifact Storage |
 | Gemini AI | Forensic Verification |
-| Redis | Realtime State Management |
+| Redis | Realtime Synchronization |
 | Next.js | Fullstack Runtime |
 
 ---
 
 # AI Verification Pipeline
 
-The AI verification engine acts as the forensic core of the platform.
+The AI verification engine acts as the forensic intelligence core of the platform.
 
-Uploaded academic credentials pass through a multimodal verification pipeline capable of:
+Uploaded credentials pass through:
 - OCR extraction
-- authenticity scoring
-- formatting inspection
-- metadata reasoning
-- forgery pattern analysis
+- authenticity investigation
+- metadata inspection
+- forgery detection
+- verification reasoning
+- scoring systems
 
 ---
 
-## AI Workflow
+## Verification Workflow
 
 ```text
-Certificate Upload
+Credential Upload
        │
        ▼
-File Preprocessing
+File Processing
        │
        ▼
 AI OCR Extraction
@@ -160,7 +248,7 @@ AI OCR Extraction
 Authenticity Investigation
        │
        ▼
-Forgery Pattern Detection
+Forgery Detection
        │
        ▼
 Verification Scoring
@@ -173,73 +261,79 @@ Database Synchronization
 
 # Security Architecture
 
-The platform implements layered institutional security.
+The platform implements layered institutional security systems.
 
 ---
 
 ## Identity Verification
-Only authenticated institutional users are allowed to access protected infrastructure layers.
+
+Only authenticated institutional users can access protected workflows.
 
 ---
 
 ## Role Isolation
+
 Students and faculty operate within isolated permission boundaries.
 
 ---
 
 ## Database Security
-Row-Level Security ensures users only access authorized records.
+
+Row-Level Security policies ensure controlled academic data access.
 
 ---
 
 ## API Protection
-Protected routes require authenticated sessions and verification middleware.
+
+Protected APIs require authenticated sessions and middleware validation.
 
 ---
 
 ## Verification Isolation
-Artifact verification pipelines remain separated from public-facing infrastructure.
+
+Verification pipelines remain isolated from public infrastructure layers.
 
 ---
 
-# Storage Architecture
+# Storage Infrastructure
 
-## Telegram-Based Artifact Storage
+## Telegram-Based Artifact Persistence
 
-DO-FETCH introduces an experimental storage architecture using Telegram as a binary artifact persistence layer.
+DOFETCH introduces an unconventional binary artifact storage architecture using Telegram infrastructure.
 
-Instead of depending entirely on expensive object storage providers, the system stores:
+The platform stores:
 - certificates
 - academic documents
 - achievement records
 - portfolio artifacts
 
-inside a managed Telegram infrastructure layer.
+inside a managed archival ecosystem.
 
 ---
 
-## Why This Architecture Matters
+## Why This Architecture Is Unique
 
 Traditional systems often rely heavily on:
 - AWS S3
 - Google Cloud Storage
 - Azure Blob Storage
 
-DO-FETCH explores a lightweight alternative designed for:
+DOFETCH explores a lightweight alternative optimized for:
 - educational institutions
-- research prototypes
+- scalable research systems
 - low-cost deployments
-- scalable academic preservation
+- academic preservation infrastructure
 
 ---
 
 # Realtime Synchronization System
 
-The platform uses Redis-powered temporary synchronization states to manage:
+Redis synchronization systems coordinate:
 - upload states
+- verification workflows
 - AI processing pipelines
-- async verification workflows
 - frontend polling systems
+- asynchronous infrastructure
 
 ---
 
@@ -258,7 +352,7 @@ AI Processing Queue
 Database Persistence
        │
        ▼
-Frontend Status Polling
+Frontend Polling
        │
        ▼
 Completion State
@@ -266,35 +360,18 @@ Completion State
 
 ---
 
-# Institutional Registry Engine
-
-The institutional registry acts as the academic indexing core of the platform.
-
-It organizes:
-- students
-- departments
-- faculty
-- sections
-- certificates
-- verification metadata
-- academic relationships
-
-into a centralized institutional ecosystem.
-
----
-
-# Portfolio System
+# Portfolio Infrastructure
 
 The portfolio engine transforms traditional academic records into dynamic digital identities.
 
 Students can showcase:
-- verified achievements
-- institutional credentials
+- verified credentials
+- institutional achievements
 - authenticity scores
-- academic metadata
-- verification status
+- verification metadata
+- academic history
 
-through interactive portfolio layers.
+through interactive portfolio systems.
 
 ---
 
@@ -302,11 +379,22 @@ through interactive portfolio layers.
 
 Faculty members can:
 - review submissions
-- inspect AI-generated scores
-- analyze verification reasoning
+- inspect AI reasoning
+- analyze verification scores
 - approve or reject credentials
 - manage institutional sections
-- monitor verification pipelines
+- monitor academic activity
+
+---
+
+# Visual Registry System
+
+The platform introduces a graph-based institutional visualization system capable of representing:
+- faculty topology
+- academic hierarchy
+- section relationships
+- institutional mappings
+- verification structures
 
 ---
 
@@ -327,93 +415,61 @@ Faculty members can:
 
 ---
 
-# Performance-Oriented Design
-
-The platform was engineered with:
-- asynchronous workflows
-- distributed infrastructure
-- lightweight APIs
-- edge-compatible runtime systems
-- optimized frontend rendering
-- scalable service delegation
-
-This allows the system to remain responsive even during complex AI verification operations.
-
----
-
-# Scalability Strategy
-
-The architecture was designed for future scaling through:
-- modular infrastructure layers
-- replaceable storage systems
-- isolated verification services
-- cloud-native deployment patterns
-- distributed processing pipelines
-
----
-
-# Deployment Architecture
-
-The platform supports:
-- serverless deployment
-- Docker-based infrastructure
-- edge runtime environments
-- standalone Node.js deployments
-
-Supported deployment targets include:
-- Vercel
-- Docker Infrastructure
-- Cloud-native runtimes
-
----
-
-# Visual Registry System
-
-The platform also introduces a graph-based institutional visualization layer capable of representing:
-- faculty structures
-- batch topology
-- section relationships
-- institutional mappings
-- academic hierarchies
-
-This creates a more intuitive institutional overview system.
-
----
-
 # Engineering Focus Areas
 
 The project heavily focuses on:
 - AI systems engineering
 - distributed infrastructure
-- authentication architecture
+- cloud-native architecture
 - realtime synchronization
-- cloud-native systems
 - scalable academic technology
-- secure institutional workflows
+- authentication systems
+- secure institutional ecosystems
+
+---
+
+# Scalability Strategy
+
+The architecture was designed for:
+- modular infrastructure
+- distributed services
+- scalable verification systems
+- replaceable storage layers
+- cloud-native deployment
+- realtime distributed processing
+
+---
+
+# Deployment Infrastructure
+
+Supported deployment targets include:
+- Vercel
+- Docker Infrastructure
+- Edge Runtime Environments
+- Standalone Node.js Runtime
 
 ---
 
 # Future Improvements
 
-Planned future improvements include:
+Planned future upgrades include:
 - production-grade object storage migration
 - advanced fraud detection systems
-- verification analytics dashboards
-- multi-university infrastructure
-- collaborative verification pipelines
 - distributed AI orchestration
-- academic insight generation
+- verification analytics dashboards
+- multi-university support
+- collaborative verification infrastructure
 
 ---
 
 # Research & Innovation
 
-DO-FETCH explores multiple unconventional engineering concepts:
+DOFETCH explores:
 - AI-assisted forensic verification
-- alternative storage architectures
+- distributed academic infrastructure
+- alternative storage architecture
 - intelligent academic indexing
 - scalable institutional ecosystems
-- low-cost distributed infrastructure
 
 ---
 
@@ -421,12 +477,12 @@ DO-FETCH explores multiple unconventional engineering concepts:
 
 - Universities
 - Colleges
-- Institutional Registries
-- Academic Archives
-- Verification Platforms
-- Digital Credential Systems
+- Academic Registries
+- Institutional Archives
+- Credential Verification Systems
 - Student Portfolio Platforms
-- Academic Audit Systems
+- Educational Infrastructure
+- Digital Credential Ecosystems
 
 ---
 
@@ -453,8 +509,8 @@ This repository contains:
 - architecture documentation
 - infrastructure analysis
 - verification workflow explanations
-- deployment strategies
 - scalability planning
+- deployment strategies
 - AI pipeline documentation
 - security architecture breakdowns
 
@@ -469,36 +525,25 @@ This repository contains:
 | AI Verification | Functional |
 | Authentication | Stable |
 | Registry System | Operational |
-| Realtime Sync | Functional |
-
----
-
-# Inspiration
-
-DO-FETCH was inspired by the need for:
-- modern academic infrastructure
-- scalable verification ecosystems
-- intelligent credential analysis
-- affordable institutional technology
-- AI-powered educational systems
+| Synchronization | Functional |
 
 ---
 
 # Project Philosophy
 
-DO-FETCH is not just a storage platform.
+DOFETCH is not just a storage platform.
 
 It is an exploration into:
 - intelligent institutional infrastructure
-- AI-assisted verification systems
+- AI-powered verification systems
 - scalable academic preservation
-- modern educational technology architecture
+- distributed educational technology
 
 ---
 
 # Closing Note
 
-DO-FETCH demonstrates how AI systems, distributed infrastructure, realtime synchronization, and unconventional storage architectures can be combined to create scalable institutional verification ecosystems capable of redefining academic credential platforms.
+DOFETCH demonstrates how AI systems, distributed infrastructure, realtime synchronization, and unconventional storage architectures can be combined to create scalable institutional verification ecosystems capable of redefining modern academic credential platforms.
 
 ---
 
