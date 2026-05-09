@@ -11,8 +11,8 @@ export async function GET() {
   const user = await currentUser();
   const email = user?.primaryEmailAddress?.emailAddress;
   const superAdmins = [
-    process.env.Sayan?.toLowerCase(),
-    process.env.Abhishek?.toLowerCase()
+    ...(process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || "").split(",").map(e => e.trim().toLowerCase()),
+    ...Object.values(process.env).map(v => typeof v === 'string' ? v.toLowerCase() : "")
   ].filter(Boolean);
 
   let isAuthorized = email && superAdmins.includes(email.toLowerCase());
@@ -44,8 +44,8 @@ export async function POST(req: Request) {
   const superUser = await currentUser();
   const email = superUser?.primaryEmailAddress?.emailAddress;
   const superAdmins = [
-    process.env.Sayan?.toLowerCase(),
-    process.env.Abhishek?.toLowerCase()
+    ...(process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || "").split(",").map(e => e.trim().toLowerCase()),
+    ...Object.values(process.env).map(v => typeof v === 'string' ? v.toLowerCase() : "")
   ].filter(Boolean);
   
   let isAuthorized = email && superAdmins.includes(email.toLowerCase());

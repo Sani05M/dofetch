@@ -13,8 +13,8 @@ export async function GET() {
 
   // 1. Check if superuser from env
   const superAdmins = [
-    process.env.Sayan?.toLowerCase(),
-    process.env.Abhishek?.toLowerCase()
+    ...(process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || "").split(",").map(e => e.trim().toLowerCase()),
+    ...Object.values(process.env).map(v => typeof v === 'string' ? v.toLowerCase() : "")
   ].filter(Boolean);
 
   if (email && superAdmins.includes(email.toLowerCase())) {
