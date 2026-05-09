@@ -1,7 +1,7 @@
 <h1 align="center">DOFETCH 📖</h1>
 
 <p align="center">
-  <img src="https://cloud-snapp.vercel.app/api/cdn/dofetchh.png?fmt=webp" alt="DOFETCH Banner" width="100%" />
+  <img src="https://cloud-snapp.vercel.app/api/cdn/dofetchh.png?fmt=avif" alt="DOFETCH Banner" width="100%" />
 </p>
 
 <h3 align="center">
