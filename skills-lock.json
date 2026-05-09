@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "admin-dashboard": {
+      "source": "erichowens/some_claude_skills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/admin-dashboard/SKILL.md",
+      "computedHash": "a5f24494ea83d6c37984216a42233830058f0c36c488e5b00961408a72cc8077"
+    }
+  }
+}
