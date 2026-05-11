@@ -22,6 +22,11 @@ const jetBrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Credential 2.0 | Adamos University",
   description: "Secure Digital Credentialing for Adamos University.",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+  },
+  manifest: "/site.webmanifest",
 };
 
 import { ClerkProvider, SignInButton, UserButton } from "@clerk/nextjs";
@@ -42,9 +47,7 @@ export default function RootLayout({
       >
         <body className="bg-bg-base text-text-primary selection:bg-accent/30">
           <AuthProvider>
-            <ClientErrorBoundary>
-              {children}
-            </ClientErrorBoundary>
+            <ClientErrorBoundary>{children}</ClientErrorBoundary>
           </AuthProvider>
         </body>
       </html>

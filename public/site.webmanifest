@@ -1,0 +1,17 @@
+{
+  "name": "Adamas University Portal",
+  "short_name": "Adamas Portal",
+  "description": "Secure Digital Credentialing for Adamas University",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "theme_color": "#fde047",
+  "background_color": "#09090b",
+  "display": "standalone",
+  "start_url": "/"
+}
