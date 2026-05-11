@@ -55,7 +55,7 @@ Infinite Academic Artifact Storage • AI Verification • Institutional Registr
 <a href="https://github.com/lizaghosh722161-cmd">
 <img src="https://cloud-snapp.vercel.app/api/cdn/6f0fd1153eca1dce64d94c06e9199593.jpg?fmt=avif" width="80px;" alt="Liza"/>
 <br />
-<sub><b>Liza Ghosh</b></sub>
+<sub><b>Liza</b></sub>
 </a>
 </td>
 
